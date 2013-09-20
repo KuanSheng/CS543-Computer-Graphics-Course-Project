@@ -11,7 +11,14 @@
 *.so.*
 *.dylib
 
+HW1/GLSLExperiment/Debug/
+HW1/GLSLExperiment.opensdf
+
 # Executables
 *.exe
 *.out
 *.app
+*.ipch
+*.obj
+*.pdb
+*.tlog
