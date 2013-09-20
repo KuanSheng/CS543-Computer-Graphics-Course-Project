@@ -89,6 +89,10 @@ InitShader(const char* vShaderFile, const char* fShaderFile)
     for ( int i = 0; i < 2; ++i ) {
 	Shader& s = shaders[i];
 	s.source = readShaderSource( s.filename );
+
+	// For test use
+	//printf("shader = %s", s.source);
+
 	if ( shaders[i].source == NULL ) {
 	    std::cerr << "Failed to read " << s.filename << std::endl;
 	    exit( EXIT_FAILURE );

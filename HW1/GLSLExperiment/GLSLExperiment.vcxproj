@@ -92,6 +92,10 @@
     <ClInclude Include="textfile.h" />
     <ClInclude Include="vec.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="fshader1.glsl" />
+    <None Include="vshader1.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -1,17 +1,25 @@
-﻿Build started 9/20/2013 3:14:19 PM.
-     1>Project "C:\Users\hzhou\CS543\HW1\GLSLExperiment\GLSLExperiment.vcxproj" on node 2 (build target(s)).
+﻿Build started 9/20/2013 6:49:45 PM.
+     1>Project "C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\GLSLExperiment\GLSLExperiment.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating "Debug\GLSLExperiment.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I..\glew\lib /I..\glew\include /I..\freeglut\include\GL /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt example1.cpp
+         example1.cpp
+     1>c:\users\hzhou\documents\github\cs543-computer-graphics-course-project\hw1\glslexperiment\example1.cpp(269): warning C4244: '=' : conversion from 'int' to 'GLfloat', possible loss of data
+     1>c:\users\hzhou\documents\github\cs543-computer-graphics-course-project\hw1\glslexperiment\example1.cpp(271): warning C4244: '=' : conversion from 'int' to 'GLfloat', possible loss of data
        Link:
-         All outputs are up-to-date.
-         GLSLExperiment.vcxproj -> C:\Users\hzhou\CS543\HW1\Debug\GLSLExperiment.exe
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.exe" /NOLOGO /LIBPATH:..\glew\lib /LIBPATH:..\freeglut\lib freeglut.lib glew32.lib glew32s.lib opengl32.lib glu32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\GLSLExperiment.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.lib" /MACHINE:X86 Debug\example1.obj
+         Debug\InitShader.obj
+         Debug\textfile.obj
+         LINK : C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.exe not found or not built by the last incremental link; performing full link
+         GLSLExperiment.vcxproj -> C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\Debug\GLSLExperiment.exe;#1" /manifest Debug\GLSLExperiment.exe.intermediate.manifest
        FinalizeBuildStatus:
          Deleting file "Debug\GLSLExperiment.unsuccessfulbuild".
          Touching "Debug\GLSLExperiment.lastbuildstate".
-     1>Done Building Project "C:\Users\hzhou\CS543\HW1\GLSLExperiment\GLSLExperiment.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\hzhou\Documents\GitHub\CS543-Computer-Graphics-Course-Project\HW1\GLSLExperiment\GLSLExperiment.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.04
+Time Elapsed 00:00:01.39
