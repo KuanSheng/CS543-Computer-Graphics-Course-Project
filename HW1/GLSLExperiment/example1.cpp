@@ -19,8 +19,8 @@ void display( void );
 void keyboard( unsigned char key, int x, int y );
 void drawPolylineFile(char *);
 void setWindow(GLfloat ,GLfloat ,GLfloat ,GLfloat );
-void setViewport(GLint , GLint , GLint , GLint );
 void drawPolylineFile(char *);
+void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
 
 typedef vec2 point2;
@@ -29,6 +29,8 @@ using namespace std;
 
 // Number of points in polyline
 int NumPoints = 3;
+static int isBKeyPressed = 0;
+
 // Array for polyline
 point2 points[3000];
 point2 points2[3]; // for test use
@@ -91,10 +93,6 @@ void setWindow(GLfloat left,GLfloat right,GLfloat bottom,GLfloat top)
     glUniformMatrix4fv( ProjLoc, 1, GL_FALSE, ortho );
 }
 
-void setViewport(GLint x, GLint y, GLint width, GLint ehight)
-{
-	glViewport(x,y,width,ehight);
-}
 
 void drawPolylineFile(char *FileName)
 {
@@ -155,8 +153,6 @@ void drawPolylineFile(char *FileName)
 	fclose(inStream);
 }
 
-
-
 void shaderSetup( void )
 {
 	// Load shaders and use the resulting shader program
@@ -183,20 +179,21 @@ void shaderSetup( void )
 
 void display( void )
 {
+	/*
+	 TIP 1: remember to enable depth buffering when drawing in 3d
 
-	// TIP 1: remember to enable depth buffering when drawing in 3d
+	 TIP 2: If you want to be sure your math functions are right, 
+	 prototype your operations in Matlab or Mathematica first to verify correct behavior
+	 both programs support some sort of runtime interface to C++ programs
 
-	// TIP 2: If you want to be sure your math functions are right, 
-	// prototype your operations in Matlab or Mathematica first to verify correct behavior
-	// both programs support some sort of runtime interface to C++ programs
-
-	// TIP3: check your graphics specs. you have a limited number of loop iterations, storage, registers, texture space etc.
+	 TIP3: check your graphics specs. you have a limited number of loop iterations, storage, registers, texture space etc.
 	
 
-	// TIP4: avoid using glTranslatex, glRotatex, push and pop
-	// pass your own view matrix to the shader directly
-	// refer to the latest OpenGL documentation for implementation details
-	
+	 TIP4: avoid using glTranslatex, glRotatex, push and pop
+	 pass your own view matrix to the shader directly
+	 refer to the latest OpenGL documentation for implementation details
+	*/
+
     //glClear( GL_COLOR_BUFFER_BIT );     // clear the window, Comment it, otherwise, when left click, there will be obvious page refresh
 	////////////////////////////////////////////////////////////////
 	// Begin from here
@@ -205,7 +202,7 @@ void display( void )
 
 	for(thumbIndex = 0; thumbIndex < 10; thumbIndex++)
 	{
-		setViewport(64*thumbIndex,432,64 ,48);
+		glViewport(64*thumbIndex,432,64 ,48);
 		drawPolylineFile(fileName[thumbIndex]);
 	}
 	////////////////////////////////////////////////////////////////
@@ -218,37 +215,64 @@ void display( void )
 void keyboard( unsigned char key, int x, int y )
 {
 	int randNum;
-    switch ( key ) {
-	case 'p':
-		srand(time(NULL));
-		randNum = rand()%10;
-		//printf("rand = %d\n", randNum);
-		glClear( GL_COLOR_BUFFER_BIT );
-		display();
-		setViewport(32, 0 , 576 , 432);
-		drawPolylineFile(fileName[randNum]);
+	isBKeyPressed = 0; // Just in case
+    switch ( key ) 
+	{
+		case 'p':
+			srand(time(NULL));
+			randNum = rand()%10;
+			//printf("rand = %d\n", randNum);
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			glViewport(32, 0 , 576 , 432);
+			drawPolylineFile(fileName[randNum]);
 		
-		break;
-	case 't':
-		setViewport(32, 0 , 576 , 432);
-		drawPolylineFile("dino.dat");
-		break;
-	case 'e':
-		printf("hello");
-		break;
-	case 'm':
-		printf("hello");
-		break;
-	case 'd':
-		printf("hello");
-		break;
-	case 'g':
-		printf("hello");
-		break;
-    case 033:
-        exit( EXIT_SUCCESS );
-        break;
+			break;
+		case 't':
+			glViewport(32, 0 , 576 , 432);
+			drawPolylineFile("dino.dat");
+			break;
+		case 'e':
+			glClear(GL_COLOR_BUFFER_BIT); // clear the window
+			display();
+			// Begin of drawing mode
+			glutMouseFunc(drawMode);
+
+			// End of drawing mode
+			break;
+		case 'm':
+			printf("hello");
+			break;
+		case 'd':
+			printf("hello");
+			break;
+		case 'g':
+			printf("hello");
+			break;
+		case 'b':
+			//a issue in E keyboard
+			isBKeyPressed = 1;
+			glutMouseFunc(drawMode);
+			break;
+		case 033:
+			exit( EXIT_SUCCESS );
+			break;
     }
+}
+//----------------------------------------------------------------------------
+// drawing handler
+void drawMode(int button, int state, int x, int y)
+{
+	switch ( button ) 
+	{
+		case GLUT_LEFT_BUTTON:
+			if(state == GLUT_DOWN) 
+			{
+				isBKeyPressed == 0 ? printf("B key is not pressed!\t") : printf("B key is pressed!\t");
+				printf("x = %d\t",x);
+				printf("y = %d\n",y);
+			}
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -258,26 +282,26 @@ void myMouse(int button, int state, int x, int y)
 	int index = 0;
 	switch ( button ) 
 	{
-	case GLUT_LEFT_BUTTON:
-		// Judge whether the mouse point is clicked on thumb images
-		if(state == GLUT_DOWN && y <= 48) 
-		{
-			index = x/64;
-			glClear( GL_COLOR_BUFFER_BIT );
-			display();
-			setViewport(32, 0 , 576 , 432);
-			drawPolylineFile(fileName[index]);
-			//printf("x = %d\t",x);
-			//printf("y = %d\n",y);
-		};
-		break;
-	case GLUT_RIGHT_BUTTON:
-		if(state == GLUT_DOWN) glClear(GL_COLOR_BUFFER_BIT); // clear the window
-		glFlush( );
-		break;
-    case GLUT_MIDDLE_BUTTON:
-        exit( EXIT_SUCCESS );
-        break;
+		case GLUT_LEFT_BUTTON:
+			// Judge whether the mouse point is clicked on thumb images
+			if(state == GLUT_DOWN && y <= 48) 
+			{
+				index = x/64;
+				glClear( GL_COLOR_BUFFER_BIT );
+				display();
+				glViewport(32, 0 , 576 , 432);
+				drawPolylineFile(fileName[index]);
+				//printf("x = %d\t",x);
+				//printf("y = %d\n",y);
+			};
+			break;
+		case GLUT_RIGHT_BUTTON:
+			if(state == GLUT_DOWN) glClear(GL_COLOR_BUFFER_BIT); // clear the window
+			glFlush( );
+			break;
+		case GLUT_MIDDLE_BUTTON:
+			exit( EXIT_SUCCESS );
+			break;
     }
 	
 }
