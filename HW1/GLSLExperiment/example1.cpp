@@ -5,10 +5,9 @@
 
 // Angel.h is homegrown include file that also includes glew and freeglut
 
+#include <stdlib.h>
+#include <time.h>
 #include "Angel.h"
-
-// Number of points in polyline
-int NumPoints = 3;
 
 //----------------------------------------------------------------------------
 
@@ -28,19 +27,25 @@ typedef vec2 point2;
 
 using namespace std;
 
+// Number of points in polyline
+int NumPoints = 3;
 // Array for polyline
 point2 points[3000];
-point2 points2[3];
+point2 points2[3]; // for test use
+
 GLuint program;
 GLuint ProjLoc;
-
-int i = 0,j = 0;
-float a[100][100],b[100][100];
-int m =0,n=0;
-int ValueOfm = 0,ValueOfn = 0;
-
-int NumOfPolyLine = 0;
-int NumOfpoints[100];
+static char fileName[10][20] = {"dino.dat", 
+						 "birdhead.dat", 
+						 "dragon.dat", 
+						 "house.dat", 
+						 "knight.dat", 
+						 "rex.dat", 
+						 "scene.dat", 
+						 "usa.dat", 
+						 "vinci.dat",
+						 "vinci.dat"
+						};
 
 void generateGeometry( void )
 {
@@ -102,10 +107,11 @@ void drawPolylineFile(char *FileName)
 
 	if((inStream = fopen(FileName, "rt")) == NULL) // Open The File
 	{
-		printf("no such file exist!");
+		printf("File does not exist!");
 		exit(0);
 	}
 
+	//Deal with dino.dat file
 	if(strcmp(FileName,"dino.dat")==0)
 	{
 		left = 0;
@@ -117,6 +123,7 @@ void drawPolylineFile(char *FileName)
 	{
 		while(!feof(inStream))
 		{
+			//Just go through comments
 			memset(line, 0, 256);
 			fscanf(inStream, "%s", line);
 			if(line[0] == '*')
@@ -140,8 +147,6 @@ void drawPolylineFile(char *FileName)
 			points[i] = point2( x , y);
 		}
 		NumPoints = numLines;
-		//initGPUBuffers( );
-		//shaderSetup( );
 		setWindow(left, right, bottom,top);
 		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
 		glDrawArrays( GL_LINE_STRIP, 0, NumPoints ); 
@@ -178,9 +183,7 @@ void shaderSetup( void )
 
 void display( void )
 {
-	setViewport(0,432 , 64 , 48);
-	drawPolylineFile( "dragon.dat");
-	//int i = 0;
+
 	// TIP 1: remember to enable depth buffering when drawing in 3d
 
 	// TIP 2: If you want to be sure your math functions are right, 
@@ -193,44 +196,41 @@ void display( void )
 	// TIP4: avoid using glTranslatex, glRotatex, push and pop
 	// pass your own view matrix to the shader directly
 	// refer to the latest OpenGL documentation for implementation details
-	/*
-    glClear( GL_COLOR_BUFFER_BIT );     // clear the window
+	
+    //glClear( GL_COLOR_BUFFER_BIT );     // clear the window, Comment it, otherwise, when left click, there will be obvious page refresh
 	////////////////////////////////////////////////////////////////
 	// Begin from here
 	////////////////////////////////////////////////////////////////
+	int thumbIndex = 0;
 
-	
-	points[0] = point2( -0.0, -0.5 );
-	points[1] = point2( 0.0, 0.5 );
-	points[2] = point2( 0.5, -0.5 );
-
-	points2[0] = point2( -0.5, 0.5 );
-	points2[1] = point2( 0.0, 0.5 );
-	points2[2] = point2( 0.0, -0.0 );
-
-	glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
-	glDrawArrays( GL_LINE_LOOP, 0, 3 );    // draw the points, options: GL_LINE_STRIP, GL_POLYGON, GL_LINE_LOOP
-	glFlush();
-
-	glBufferData( GL_ARRAY_BUFFER, sizeof(points2), points2, GL_STATIC_DRAW );
-	glDrawArrays( GL_POLYGON, 0, 3 );    // draw the points, options: GL_LINE_STRIP, GL_POLYGON, GL_LINE_LOOP
-    
+	for(thumbIndex = 0; thumbIndex < 10; thumbIndex++)
+	{
+		setViewport(64*thumbIndex,432,64 ,48);
+		drawPolylineFile(fileName[thumbIndex]);
+	}
 	////////////////////////////////////////////////////////////////
 	// End of buffer dealing
 	////////////////////////////////////////////////////////////////
-    glFlush(); // force output to graphics hardware
-	*/
+	
 }
 //----------------------------------------------------------------------------
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
 {
+	int randNum;
     switch ( key ) {
 	case 'p':
-		;
+		srand(time(NULL));
+		randNum = rand()%10;
+		//printf("rand = %d\n", randNum);
+		glClear( GL_COLOR_BUFFER_BIT );
+		display();
+		setViewport(32, 0 , 576 , 432);
+		drawPolylineFile(fileName[randNum]);
+		
 		break;
 	case 't':
-		setViewport(0, 0 , 500 , 400);
+		setViewport(32, 0 , 576 , 432);
 		drawPolylineFile("dino.dat");
 		break;
 	case 'e':
