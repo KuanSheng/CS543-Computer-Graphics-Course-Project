@@ -255,13 +255,20 @@ void keyboard( unsigned char key, int x, int y )
 // mouse handler
 void myMouse(int button, int state, int x, int y)
 {
+	int index = 0;
 	switch ( button ) 
 	{
 	case GLUT_LEFT_BUTTON:
-		if(state == GLUT_UP) 
+		// Judge whether the mouse point is clicked on thumb images
+		if(state == GLUT_DOWN && y <= 48) 
 		{
-			printf("x = %d\t",x);
-			printf("y = %d\n",y);
+			index = x/64;
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			setViewport(32, 0 , 576 , 432);
+			drawPolylineFile(fileName[index]);
+			//printf("x = %d\t",x);
+			//printf("y = %d\n",y);
 		};
 		break;
 	case GLUT_RIGHT_BUTTON:
