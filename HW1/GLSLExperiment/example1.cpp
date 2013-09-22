@@ -25,6 +25,7 @@ void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
 void mouseMotion(int, int, GLint  , GLint  );
 void deleteHandler( int , int , GLint  , GLint);
+void gingerbreadMan( void );
 
 typedef vec2 point2;
 
@@ -46,6 +47,12 @@ static int nearestPointIndex = 0; // for m event
 
 static int nearestPolylineIndex = 0; // for d event, store polyline index
 static int nearestPolylinePointIndex = 0; // for d event, store point index in above polyline
+
+//initialize for gingerbread man 
+static point2 startPoint = point2(115, 121);
+const int M = 40;
+const int L = 3;
+const int iterationTimes = 100;
 
 GLuint program;
 GLuint ProjLoc;
@@ -280,7 +287,8 @@ void keyboard( unsigned char key, int x, int y )
 			glutMouseFunc(deleteHandler);
 			break;
 		case 'g':
-			printf("hello");
+			glClear(GL_COLOR_BUFFER_BIT); // clear the window
+			gingerbreadMan();
 			break;
 		case 'b':
 			//a issue in E keyboard
@@ -293,6 +301,30 @@ void keyboard( unsigned char key, int x, int y )
 		default:
 			isBKeyPressed = 0;
     }
+}
+//----------------------------------------------------------------------------
+// gingerbreadMan handler
+void gingerbreadMan( void )
+{
+	point2 p = startPoint;
+	//point2 q;
+	for(int j = 0; j < iterationTimes; j++)
+	{
+		for(int i = 0; i < 3000; i++)
+		{
+			points[i].x = M*(1+2*L)-p.y+abs(p.x-L*M);
+			points[i].y = p.x;
+		
+			p = points[i];
+		}
+		glViewport(0, 0 , 640 , 480);
+		setWindow(0, 640, 0, 480);
+		//printf("size = %d\n",sizeof(pointsForDrawMode));
+		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
+		glDrawArrays( GL_POINTS, 0, 3000 ); 
+		glFlush();
+	}
+
 }
 //----------------------------------------------------------------------------
 // delete handler
