@@ -301,7 +301,7 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 			if(state == GLUT_DOWN) 
 			{
 				
-				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-y); 
+				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(480-y)); 
 				/*
 				for(int i = 0; i < pointIndex; i++)
 				{
@@ -311,7 +311,7 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 				for(int i = 1; i < pointIndex; i++)
 				{
 					//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
-					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y);
+					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-(480-y));
 					if(distance > temp_distance)
 					{
 						distance = temp_distance;
