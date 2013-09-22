@@ -24,6 +24,7 @@ void drawPolylineFile(char *);
 void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
 void mouseMotion(int, int, GLint  , GLint  );
+void deleteHandler( int , int , GLint  , GLint);
 
 typedef vec2 point2;
 
@@ -41,7 +42,10 @@ point2 points2[3]; // for test use
 static point2 pointsForDrawMode[2];
 static point2 pointsForPolyline[100][100];
 static int countOfPointsForPolyline[100] = { 0 };
-static int nearestPointIndex = 0;
+static int nearestPointIndex = 0; // for m event
+
+static int nearestPolylineIndex = 0; // for d event, store polyline index
+static int nearestPolylinePointIndex = 0; // for d event, store point index in above polyline
 
 GLuint program;
 GLuint ProjLoc;
@@ -273,7 +277,7 @@ void keyboard( unsigned char key, int x, int y )
 
 			break;
 		case 'd':
-			printf("hello");
+			glutMouseFunc(deleteHandler);
 			break;
 		case 'g':
 			printf("hello");
@@ -290,7 +294,77 @@ void keyboard( unsigned char key, int x, int y )
 			isBKeyPressed = 0;
     }
 }
+//----------------------------------------------------------------------------
+// delete handler
+void deleteHandler( int button, int state, GLint  x, GLint y)
+{
+	switch ( button ) 
+	{
+		case GLUT_LEFT_BUTTON:
+			if(state == GLUT_UP) 
+			{
+				
+				GLfloat distance = abs(pointsForPolyline[0][0].x-x) + abs(pointsForPolyline[0][0].y-(480-y)); 
+				for(int j = 0; j <= polylineIndex; j++)
+				{
+					for(int i = 0; i < countOfPointsForPolyline[j]; i++)
+					{
+						//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
+						GLfloat temp_distance = abs(pointsForPolyline[j][i].x-x) + abs(pointsForPolyline[j][i].y-(480-y));
+						if(distance > temp_distance)
+						{
+							distance = temp_distance;
+							nearestPolylineIndex = j; 
+							nearestPolylinePointIndex = i;
+						}
+					}
+				}
+				if(nearestPolylinePointIndex > 0)
+				{
+					pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex-1];
+				}
+				else if(nearestPolylinePointIndex == 0 && countOfPointsForPolyline[nearestPolylineIndex]>1)
+				{
+					pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex+1];
+				}
 
+				//Update the display (clean the screen & re-render it)
+				glClear( GL_COLOR_BUFFER_BIT );
+				display();
+				glViewport(0, 0 , 640 , 480);
+				setWindow(0, 640, 0, 480);
+				//printf("size = %d\n",sizeof(pointsForDrawMode));
+				for(int i =0; i <= polylineIndex; i++)
+				{
+					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
+					glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline[i] ); 
+					glFlush();
+				}
+			}
+			/*
+			if(state == GLUT_UP) 
+			{
+				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
+				pointsForPolyline[polylineIndex][nearestPointIndex].y = 480 - y;
+				//printf("Up point = %d\t%d\n",x,y);
+
+				//Update the display (clean the screen & re-render it)
+				glClear( GL_COLOR_BUFFER_BIT );
+				display();
+				glViewport(0, 0 , 640 , 480);
+				setWindow(0, 640, 0, 480);
+				//printf("size = %d\n",sizeof(pointsForDrawMode));
+				for(int i =0; i <= polylineIndex; i++)
+				{
+					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
+					glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline[i] ); 
+					glFlush();
+				}
+			}
+			*/
+			break;
+	}
+}
 //----------------------------------------------------------------------------
 // drawing handler
 void mouseMotion( int button, int state, GLint  x, GLint y)
