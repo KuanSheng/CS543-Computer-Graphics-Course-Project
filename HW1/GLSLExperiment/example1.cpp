@@ -31,10 +31,12 @@ using namespace std;
 // Number of points in polyline
 int NumPoints = 3;
 static int isBKeyPressed = 0;
-
+static int hasPrepoint = 0;
 // Array for polyline
 point2 points[3000];
 point2 points2[3]; // for test use
+point2 pointsForDrawMode[2];
+point2 pointsForCurrentPolyline[100];
 
 GLuint program;
 GLuint ProjLoc;
@@ -71,7 +73,6 @@ void generateGeometry( void )
 	*/
 }
 
-
 void initGPUBuffers( void )
 {
 	// Create a vertex array object
@@ -93,7 +94,6 @@ void setWindow(GLfloat left,GLfloat right,GLfloat bottom,GLfloat top)
 	mat4 ortho = Ortho2D( left, right, bottom, top );
     glUniformMatrix4fv( ProjLoc, 1, GL_FALSE, ortho );
 }
-
 
 void drawPolylineFile(char *FileName)
 {
@@ -171,8 +171,6 @@ void shaderSetup( void )
     glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
 
 }
-
-
 
 //----------------------------------------------------------------------------
 // this is where the drawing should happen
@@ -258,8 +256,7 @@ void keyboard( unsigned char key, int x, int y )
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			display();
 			// Begin of drawing mode
-			glutMouseFunc(drawMode);
-
+			glutMouseFunc(drawMode); //After this, you must reset: glutMouseFunc(myMouse);
 			// End of drawing mode
 			break;
 		case 'm':
@@ -292,9 +289,28 @@ void drawMode(int button, int state, int x, int y)
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
-				isBKeyPressed == 0 ? printf("B key is not pressed!\t") : printf("B key is pressed!\t");
-				printf("x = %d\t",x);
-				printf("y = %d\n",y);
+				if(hasPrepoint == 0 || isBKeyPressed == 1)
+				{
+					pointsForDrawMode[0] = point2( x , 480 - y); 
+					pointsForDrawMode[1] = point2( x , 480 - y); 
+					hasPrepoint = 1; 
+				}
+				else
+				{
+					pointsForDrawMode[0] = pointsForDrawMode[1];
+					pointsForDrawMode[1] = point2( x , 480 - y); 
+					glViewport(0, 0 , 640 , 480);
+					setWindow(0, 640, 0, 480);
+					//printf("size = %d\n",sizeof(pointsForDrawMode));
+					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForDrawMode), pointsForDrawMode, GL_STATIC_DRAW );
+					glDrawArrays( GL_LINE_STRIP, 0, 2 ); 
+					glFlush();
+				}
+				//isBKeyPressed == 0 ? printf("B key is not pressed!\t") : printf("B key is pressed!\t");
+				isBKeyPressed = 0;
+
+				//printf("Pre x = %f\ty = %f\n",pointsForDrawMode[0].x, pointsForDrawMode[0].y);
+				//printf("Cur x = %f\ty = %f\n",pointsForDrawMode[1].x, pointsForDrawMode[1].y);
 			}
 	}
 }
