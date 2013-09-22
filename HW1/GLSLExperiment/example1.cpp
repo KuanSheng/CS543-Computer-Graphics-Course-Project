@@ -23,6 +23,7 @@ void setWindow(GLfloat ,GLfloat ,GLfloat ,GLfloat );
 void drawPolylineFile(char *);
 void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
+void mouseMotion(GLint  , GLint  );
 
 typedef vec2 point2;
 
@@ -32,11 +33,12 @@ using namespace std;
 int NumPoints = 3;
 static int isBKeyPressed = 0;
 static int hasPrepoint = 0;
+static int polylineIndex = 0;
 // Array for polyline
 point2 points[3000];
 point2 points2[3]; // for test use
 point2 pointsForDrawMode[2];
-point2 pointsForCurrentPolyline[100];
+point2 pointsForPolyline[100][100];
 
 GLuint program;
 GLuint ProjLoc;
@@ -255,12 +257,14 @@ void keyboard( unsigned char key, int x, int y )
 		case 'e':
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			display();
+			polylineIndex = 0;
+			isBKeyPressed = 0;
 			// Begin of drawing mode
 			glutMouseFunc(drawMode); //After this, you must reset: glutMouseFunc(myMouse);
 			// End of drawing mode
 			break;
 		case 'm':
-			printf("hello");
+			glutMotionFunc(mouseMotion);//Take care of the mouse location
 			break;
 		case 'd':
 			printf("hello");
@@ -282,6 +286,12 @@ void keyboard( unsigned char key, int x, int y )
 }
 //----------------------------------------------------------------------------
 // drawing handler
+void mouseMotion( GLint  x, GLint y)
+{
+	printf("%d\t%d\n",x,y);
+}
+//----------------------------------------------------------------------------
+// drawing handler
 void drawMode(int button, int state, int x, int y)
 {
 	switch ( button ) 
@@ -289,9 +299,10 @@ void drawMode(int button, int state, int x, int y)
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
+
 				if(hasPrepoint == 0 || isBKeyPressed == 1)
 				{
-					pointsForDrawMode[0] = point2( x , 480 - y); 
+					//pointsForDrawMode[0] = point2( x , 480 - y); 
 					pointsForDrawMode[1] = point2( x , 480 - y); 
 					hasPrepoint = 1; 
 				}
