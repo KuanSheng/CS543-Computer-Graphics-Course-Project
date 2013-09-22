@@ -17,6 +17,7 @@ void initGPUBuffers( void );
 void shaderSetup( void );
 void display( void );
 void keyboard( unsigned char key, int x, int y );
+void tEventHandler( void );
 void drawPolylineFile(char *);
 void setWindow(GLfloat ,GLfloat ,GLfloat ,GLfloat );
 void drawPolylineFile(char *);
@@ -211,6 +212,24 @@ void display( void )
 	
 }
 //----------------------------------------------------------------------------
+// keyboard t event handler
+void tEventHandler( void )
+{
+	int x = 0;
+	int y = 0;
+	int randNum;
+	srand(time(NULL));
+	for(y = 0; y < 6; y++)
+	{
+		for(x = 0; x < 6; x++)
+		{
+			randNum = rand()%10;
+			glViewport(106*(5-x)+20,364-(62*y),64 ,48);
+			drawPolylineFile(fileName[randNum]);
+		}
+	}
+}
+//----------------------------------------------------------------------------
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
 {
@@ -229,8 +248,11 @@ void keyboard( unsigned char key, int x, int y )
 		
 			break;
 		case 't':
-			glViewport(32, 0 , 576 , 432);
-			drawPolylineFile("dino.dat");
+			//glViewport(32, 0 , 576 , 432);
+			//drawPolylineFile("dino.dat");
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			tEventHandler();
 			break;
 		case 'e':
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
@@ -257,6 +279,8 @@ void keyboard( unsigned char key, int x, int y )
 		case 033:
 			exit( EXIT_SUCCESS );
 			break;
+		default:
+			isBKeyPressed = 0;
     }
 }
 //----------------------------------------------------------------------------
