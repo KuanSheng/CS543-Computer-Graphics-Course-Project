@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 // remember to prototype
-void generateGeometry( void );
 void initGPUBuffers( void );
 void shaderSetup( void );
 void display( void );
@@ -42,6 +41,8 @@ point2 points[3000];
 point2 points2[3]; // for test use
 static point2 pointsForDrawMode[2];
 static point2 pointsForPolyline[100][100];
+
+
 static int countOfPointsForPolyline[100] = { 0 };
 static int nearestPointIndex = 0; // for m event
 
@@ -56,7 +57,8 @@ const int iterationTimes = 100;
 
 GLuint program;
 GLuint ProjLoc;
-static char fileName[10][20] = {"dino.dat", 
+static char fileName[10][20] = {
+						 "dino.dat", 
 						 "birdhead.dat", 
 						 "dragon.dat", 
 						 "house.dat", 
@@ -67,27 +69,6 @@ static char fileName[10][20] = {"dino.dat",
 						 "vinci.dat",
 						 "vinci.dat"
 						};
-
-void generateGeometry( void )
-{
-	// ***************** Important note ***************** //
-	// please refer to OpenGL documentation before coding
-	// many old functions have been depricated
-	// though they will probably still work on most machines others
-	// will require compatiability mode to be used
-
-	// Specifiy the vertices for a triangle
-	// for 3d points use vec3 and change your vPosition attribute appropriately
-	/*
-	points[0] = point2( -0.0, -0.5 );
-	points[1] = point2( 0.0, 0.5 );
-	points[2] = point2( 0.5, -0.5 );
-
-	points2[0] = point2( -0.5, 0.5 );
-	points2[1] = point2( 0.0, 0.5 );
-	points2[2] = point2( 0.0, -0.0 );
-	*/
-}
 
 void initGPUBuffers( void )
 {
@@ -113,11 +94,10 @@ void setWindow(GLfloat left,GLfloat right,GLfloat bottom,GLfloat top)
 
 void drawPolylineFile(char *FileName)
 {
-	
 	char line[256];
-	float left, right, bottom, top;
+	GLfloat left, right, bottom, top;
 	FILE *inStream;
-	GLint numpolys, numLines; 
+	GLint countOfPolylines, countOfPointsForPolyline; 
 	GLfloat	x, y;
 
 	if((inStream = fopen(FileName, "rt")) == NULL) // Open The File
@@ -127,7 +107,7 @@ void drawPolylineFile(char *FileName)
 	}
 
 	//Deal with dino.dat file
-	if(strcmp(FileName,"dino.dat")==0)
+	if(strcmp(FileName,"dino.dat")==0 || strcmp(FileName,"hello.dat")==0)
 	{
 		left = 0;
 		right = 640;
@@ -150,21 +130,19 @@ void drawPolylineFile(char *FileName)
 		fscanf(inStream, "%f %f %f %f\n", &left, &top, &right, &bottom);
 	 }
 	
-
-	fscanf(inStream,"%d", &numpolys);			// read the number of polylines
-	for(int j = 0; j < numpolys; j++)
+	// read point count for each polyline
+	fscanf(inStream,"%d", &countOfPolylines);			
+	for(int j = 0; j < countOfPolylines; j++)
 	{	//read each polyline
-		
-		fscanf(inStream,"%d", &numLines);
-		for (int i = 0; i < numLines; i++)
+		fscanf(inStream,"%d", &countOfPointsForPolyline);
+		for (int i = 0; i < countOfPointsForPolyline; i++)
 		{
 			fscanf(inStream,"%f %f", &x, &y);
 			points[i] = point2( x , y);
 		}
-		NumPoints = numLines;
 		setWindow(left, right, bottom,top);
 		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
-		glDrawArrays( GL_LINE_STRIP, 0, NumPoints ); 
+		glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline ); 
 		glFlush();
 	}
 	fclose(inStream);
@@ -220,6 +198,8 @@ void display( void )
 		glViewport(64*thumbIndex,432,64 ,48);
 		drawPolylineFile(fileName[thumbIndex]);
 	}
+	glViewport(0, 0 , 640 , 480);
+	drawPolylineFile("hello.dat");
 	////////////////////////////////////////////////////////////////
 	// End of buffer dealing
 	////////////////////////////////////////////////////////////////
@@ -253,8 +233,8 @@ void keyboard( unsigned char key, int x, int y )
 	{
 		case 'p':
 			srand(time(NULL));
+			//generate a random number to select a random file
 			randNum = rand()%10;
-			//printf("rand = %d\n", randNum);
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
 			glViewport(32, 0 , 576 , 432);
@@ -307,7 +287,6 @@ void keyboard( unsigned char key, int x, int y )
 void gingerbreadMan( void )
 {
 	point2 p = startPoint;
-	//point2 q;
 	for(int j = 0; j < iterationTimes; j++)
 	{
 		for(int i = 0; i < 3000; i++)
@@ -319,7 +298,6 @@ void gingerbreadMan( void )
 		}
 		glViewport(0, 0 , 640 , 480);
 		setWindow(0, 640, 0, 480);
-		//printf("size = %d\n",sizeof(pointsForDrawMode));
 		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
 		glDrawArrays( GL_POINTS, 0, 3000 ); 
 		glFlush();
@@ -469,20 +447,6 @@ void drawMode(int button, int state, int x, int y)
 					//pointsForDrawMode[0] = point2( x , 480 - y); 
 					pointsForDrawMode[1] = point2( x , 480 - y); 
 					countOfPointsForPolyline[polylineIndex] = pointIndex;
-					/*
-					printf("polylineIndex = %d\tpointIndex = %d\n",polylineIndex, pointIndex);
-					if(polylineIndex == 5)
-					{
-						for(int j = 0; j < polylineIndex; j++)
-						{
-							for(int i = 0; i < countOfPointsForPolyline[j]; i++)
-							{
-								cout<<i<<"   "<<pointsForPolyline[j][i] << endl;
-							}
-						}
-						printf("\n");
-					}
-					*/
 					if(hasPrepoint != 0) 
 					{
 						polylineIndex++;
@@ -501,16 +465,11 @@ void drawMode(int button, int state, int x, int y)
 					pointsForDrawMode[1] = point2( x , 480 - y); 
 					glViewport(0, 0 , 640 , 480);
 					setWindow(0, 640, 0, 480);
-					//printf("size = %d\n",sizeof(pointsForDrawMode));
 					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForDrawMode), pointsForDrawMode, GL_STATIC_DRAW );
 					glDrawArrays( GL_LINE_STRIP, 0, 2 ); 
 					glFlush();
 				}
-				//isBKeyPressed == 0 ? printf("B key is not pressed!\t") : printf("B key is pressed!\t");
 				isBKeyPressed = 0;
-
-				//printf("Pre x = %f\ty = %f\n",pointsForDrawMode[0].x, pointsForDrawMode[0].y);
-				//printf("Cur x = %f\ty = %f\n",pointsForDrawMode[1].x, pointsForDrawMode[1].y);
 			}
 	}
 }
@@ -566,21 +525,14 @@ int main( int argc, char **argv )
 
 	// init glew
     glewInit();
-
-    generateGeometry( );
     initGPUBuffers( );
     shaderSetup( );
 
-	// assign handlers
+	// assign default handlers
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
 	glutMouseFunc(myMouse);
-	// should add menus
-	// add mouse handler
-	// add resize window functionality (should probably try to preserve aspect ratio)
 
-	// enter the drawing loop
-	// frame rate can be controlled with 
     glutMainLoop();
     return 0;
 }
