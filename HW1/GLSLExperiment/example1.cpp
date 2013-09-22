@@ -25,6 +25,7 @@ void myMouse(int , int , int , int );
 void mouseMotion(int, int, GLint  , GLint  );
 void deleteHandler( int , int , GLint  , GLint);
 void gingerbreadMan( void );
+void myInit( void );
 
 typedef vec2 point2;
 
@@ -41,7 +42,7 @@ point2 points[3000];
 point2 points2[3]; // for test use
 static point2 pointsForDrawMode[2];
 static point2 pointsForPolyline[100][100];
-
+static int isIndrawMode = 0;
 
 static int countOfPointsForPolyline[100] = { 0 };
 static int nearestPointIndex = 0; // for m event
@@ -172,21 +173,6 @@ void shaderSetup( void )
 
 void display( void )
 {
-	/*
-	 TIP 1: remember to enable depth buffering when drawing in 3d
-
-	 TIP 2: If you want to be sure your math functions are right, 
-	 prototype your operations in Matlab or Mathematica first to verify correct behavior
-	 both programs support some sort of runtime interface to C++ programs
-
-	 TIP3: check your graphics specs. you have a limited number of loop iterations, storage, registers, texture space etc.
-	
-
-	 TIP4: avoid using glTranslatex, glRotatex, push and pop
-	 pass your own view matrix to the shader directly
-	 refer to the latest OpenGL documentation for implementation details
-	*/
-
     //glClear( GL_COLOR_BUFFER_BIT );     // clear the window, Comment it, otherwise, when left click, there will be obvious page refresh
 	////////////////////////////////////////////////////////////////
 	// Begin from here
@@ -198,8 +184,6 @@ void display( void )
 		glViewport(64*thumbIndex,432,64 ,48);
 		drawPolylineFile(fileName[thumbIndex]);
 	}
-	glViewport(0, 0 , 640 , 480);
-	drawPolylineFile("hello.dat");
 	////////////////////////////////////////////////////////////////
 	// End of buffer dealing
 	////////////////////////////////////////////////////////////////
@@ -239,18 +223,18 @@ void keyboard( unsigned char key, int x, int y )
 			display();
 			glViewport(32, 0 , 576 , 432);
 			drawPolylineFile(fileName[randNum]);
-		
+			isIndrawMode = 0;
 			break;
 		case 't':
-			//glViewport(32, 0 , 576 , 432);
-			//drawPolylineFile("dino.dat");
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
 			tEventHandler();
+			isIndrawMode = 0;
 			break;
 		case 'e':
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			display();
+			isIndrawMode = 1;
 			polylineIndex = 0;
 			isBKeyPressed = 0;
 			hasPrepoint = 0;
@@ -259,27 +243,37 @@ void keyboard( unsigned char key, int x, int y )
 			// End of drawing mode
 			break;
   		case 'm':
-			glutMouseFunc(mouseMotion);
-			//glutMotionFunc(mouseMotion);//Take care of the mouse location
-
+			if(isIndrawMode == 1)
+			{
+				glutMouseFunc(mouseMotion);
+				//glutMotionFunc(mouseMotion);//Take care of the mouse location
+			}
 			break;
 		case 'd':
-			glutMouseFunc(deleteHandler);
+			if(isIndrawMode == 1)
+			{
+				glutMouseFunc(deleteHandler);
+			}
 			break;
 		case 'g':
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			gingerbreadMan();
+			isIndrawMode = 0;
 			break;
 		case 'b':
-			//a issue in E keyboard
-			isBKeyPressed = 1;
-			glutMouseFunc(drawMode);
+			if(isIndrawMode == 1)
+			{
+				//a issue in E keyboard
+				isBKeyPressed = 1;
+				glutMouseFunc(drawMode);
+			}
 			break;
 		case 033:
 			exit( EXIT_SUCCESS );
 			break;
 		default:
 			isBKeyPressed = 0;
+			isIndrawMode = 0;
     }
 }
 //----------------------------------------------------------------------------
@@ -384,17 +378,9 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
-				
 				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(480-y)); 
-				/*
-				for(int i = 0; i < pointIndex; i++)
-				{
-					printf("pointIndex=%d\t%f\t%f\n",i,pointsForPolyline[polylineIndex][i].x,pointsForPolyline[polylineIndex][i].y);
-				}
-				*/
 				for(int i = 1; i < pointIndex; i++)
 				{
-					//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
 					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-(480-y));
 					if(distance > temp_distance)
 					{
@@ -402,21 +388,19 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 						nearestPointIndex = i;
 					}
 				}
-				//printf("\n\nDown point = %d\t%d\n",x,y);
-				//printf("Nearest point index = %d\n", nearestPointIndex);
 			}
 			if(state == GLUT_UP) 
 			{
+				printf("New Point = (%d, %d)\n", x, y);
 				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
 				pointsForPolyline[polylineIndex][nearestPointIndex].y = 480 - y;
-				//printf("Up point = %d\t%d\n",x,y);
 
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
 				glViewport(0, 0 , 640 , 480);
 				setWindow(0, 640, 0, 480);
-				//printf("size = %d\n",sizeof(pointsForDrawMode));
+				printf("count of Polylines = %d\t%d\n",polylineIndex, countOfPointsForPolyline[polylineIndex]);
 				for(int i =0; i <= polylineIndex; i++)
 				{
 					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
@@ -424,13 +408,9 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 					glFlush();
 				}
 			}
-			
-			
-			
 			break;
 	}
-	
-	
+
 }
 //----------------------------------------------------------------------------
 // drawing handler
@@ -446,7 +426,7 @@ void drawMode(int button, int state, int x, int y)
 				{
 					//pointsForDrawMode[0] = point2( x , 480 - y); 
 					pointsForDrawMode[1] = point2( x , 480 - y); 
-					countOfPointsForPolyline[polylineIndex] = pointIndex;
+					//countOfPointsForPolyline[polylineIndex] = pointIndex;
 					if(hasPrepoint != 0) 
 					{
 						polylineIndex++;
@@ -461,6 +441,9 @@ void drawMode(int button, int state, int x, int y)
 				{
 					pointsForPolyline[polylineIndex][pointIndex] = point2( x , 480 - y);
 					pointIndex++;
+
+					countOfPointsForPolyline[polylineIndex] = pointIndex;
+
 					pointsForDrawMode[0] = pointsForDrawMode[1];
 					pointsForDrawMode[1] = point2( x , 480 - y); 
 					glViewport(0, 0 , 640 , 480);
@@ -471,6 +454,7 @@ void drawMode(int button, int state, int x, int y)
 				}
 				isBKeyPressed = 0;
 			}
+			break;
 	}
 }
 
@@ -505,6 +489,12 @@ void myMouse(int button, int state, int x, int y)
 	
 }
 
+void myInit( void )
+{
+	//Draw "HELLO"
+	glViewport(0, 0 , 640 , 480);
+	drawPolylineFile("hello.dat");
+}
 //----------------------------------------------------------------------------
 // entry point
 int main( int argc, char **argv )
@@ -527,7 +517,7 @@ int main( int argc, char **argv )
     glewInit();
     initGPUBuffers( );
     shaderSetup( );
-
+	myInit( );
 	// assign default handlers
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
