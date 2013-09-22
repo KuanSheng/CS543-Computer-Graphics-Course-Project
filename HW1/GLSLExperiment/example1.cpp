@@ -23,7 +23,7 @@ void setWindow(GLfloat ,GLfloat ,GLfloat ,GLfloat );
 void drawPolylineFile(char *);
 void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
-void mouseMotion(GLint  , GLint  );
+void mouseMotion(int, int, GLint  , GLint  );
 
 typedef vec2 point2;
 
@@ -34,11 +34,14 @@ int NumPoints = 3;
 static int isBKeyPressed = 0;
 static int hasPrepoint = 0;
 static int polylineIndex = 0;
+static int pointIndex = 0;
 // Array for polyline
 point2 points[3000];
 point2 points2[3]; // for test use
-point2 pointsForDrawMode[2];
-point2 pointsForPolyline[100][100];
+static point2 pointsForDrawMode[2];
+static point2 pointsForPolyline[100][100];
+static int countOfPointsForPolyline[100] = { 0 };
+static int nearestPointIndex = 0;
 
 GLuint program;
 GLuint ProjLoc;
@@ -259,12 +262,15 @@ void keyboard( unsigned char key, int x, int y )
 			display();
 			polylineIndex = 0;
 			isBKeyPressed = 0;
+			hasPrepoint = 0;
 			// Begin of drawing mode
 			glutMouseFunc(drawMode); //After this, you must reset: glutMouseFunc(myMouse);
 			// End of drawing mode
 			break;
-		case 'm':
-			glutMotionFunc(mouseMotion);//Take care of the mouse location
+  		case 'm':
+			glutMouseFunc(mouseMotion);
+			//glutMotionFunc(mouseMotion);//Take care of the mouse location
+
 			break;
 		case 'd':
 			printf("hello");
@@ -284,11 +290,63 @@ void keyboard( unsigned char key, int x, int y )
 			isBKeyPressed = 0;
     }
 }
+
 //----------------------------------------------------------------------------
 // drawing handler
-void mouseMotion( GLint  x, GLint y)
+void mouseMotion( int button, int state, GLint  x, GLint y)
 {
-	printf("%d\t%d\n",x,y);
+	switch ( button ) 
+	{
+		case GLUT_LEFT_BUTTON:
+			if(state == GLUT_DOWN) 
+			{
+				
+				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-y); 
+				/*
+				for(int i = 0; i < pointIndex; i++)
+				{
+					printf("pointIndex=%d\t%f\t%f\n",i,pointsForPolyline[polylineIndex][i].x,pointsForPolyline[polylineIndex][i].y);
+				}
+				*/
+				for(int i = 1; i < pointIndex; i++)
+				{
+					//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
+					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y);
+					if(distance > temp_distance)
+					{
+						distance = temp_distance;
+						nearestPointIndex = i;
+					}
+				}
+				//printf("\n\nDown point = %d\t%d\n",x,y);
+				//printf("Nearest point index = %d\n", nearestPointIndex);
+			}
+			if(state == GLUT_UP) 
+			{
+				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
+				pointsForPolyline[polylineIndex][nearestPointIndex].y = 480 - y;
+				//printf("Up point = %d\t%d\n",x,y);
+
+				//Update the display (clean the screen & re-render it)
+				glClear( GL_COLOR_BUFFER_BIT );
+				display();
+				glViewport(0, 0 , 640 , 480);
+				setWindow(0, 640, 0, 480);
+				//printf("size = %d\n",sizeof(pointsForDrawMode));
+				for(int i =0; i <= polylineIndex; i++)
+				{
+					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
+					glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline[i] ); 
+					glFlush();
+				}
+			}
+			
+			
+			
+			break;
+	}
+	
+	
 }
 //----------------------------------------------------------------------------
 // drawing handler
@@ -304,10 +362,35 @@ void drawMode(int button, int state, int x, int y)
 				{
 					//pointsForDrawMode[0] = point2( x , 480 - y); 
 					pointsForDrawMode[1] = point2( x , 480 - y); 
+					countOfPointsForPolyline[polylineIndex] = pointIndex;
+					/*
+					printf("polylineIndex = %d\tpointIndex = %d\n",polylineIndex, pointIndex);
+					if(polylineIndex == 5)
+					{
+						for(int j = 0; j < polylineIndex; j++)
+						{
+							for(int i = 0; i < countOfPointsForPolyline[j]; i++)
+							{
+								cout<<i<<"   "<<pointsForPolyline[j][i] << endl;
+							}
+						}
+						printf("\n");
+					}
+					*/
+					if(hasPrepoint != 0) 
+					{
+						polylineIndex++;
+					}
 					hasPrepoint = 1; 
+					pointIndex = 0;
+					
+					pointsForPolyline[polylineIndex][pointIndex] = point2( x , 480 - y);
+					pointIndex++;
 				}
 				else
 				{
+					pointsForPolyline[polylineIndex][pointIndex] = point2( x , 480 - y);
+					pointIndex++;
 					pointsForDrawMode[0] = pointsForDrawMode[1];
 					pointsForDrawMode[1] = point2( x , 480 - y); 
 					glViewport(0, 0 , 640 , 480);
