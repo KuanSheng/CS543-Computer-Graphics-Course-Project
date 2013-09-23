@@ -223,6 +223,7 @@ void keyboard( unsigned char key, int x, int y )
 			glViewport(32, 0 , 576 , 432);
 			drawPolylineFile(fileName[randNum]);
 			isIndrawMode = 0;
+			glutMouseFunc(myMouse);
 			break;
 		case 't':
 			glClear( GL_COLOR_BUFFER_BIT );
