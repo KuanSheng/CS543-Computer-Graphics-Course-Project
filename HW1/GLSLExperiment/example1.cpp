@@ -87,7 +87,6 @@ void initGPUBuffers( void )
 
 void setWindow(GLfloat left,GLfloat right,GLfloat bottom,GLfloat top)
 {
-	
 	ProjLoc = glGetUniformLocation( program, "Proj" );
 	mat4 ortho = Ortho2D( left, right, bottom, top );
     glUniformMatrix4fv( ProjLoc, 1, GL_FALSE, ortho );
@@ -305,9 +304,10 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 	switch ( button ) 
 	{
 		case GLUT_LEFT_BUTTON:
+			nearestPolylineIndex = 0; 
+			nearestPolylinePointIndex = 0;
 			if(state == GLUT_UP) 
 			{
-				
 				GLfloat distance = abs(pointsForPolyline[0][0].x-x) + abs(pointsForPolyline[0][0].y-(480-y)); 
 				for(int j = 0; j <= polylineIndex; j++)
 				{
@@ -323,15 +323,21 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 						}
 					}
 				}
-				if(nearestPolylinePointIndex > 0)
+				if(nearestPolylinePointIndex <= countOfPointsForPolyline[nearestPolylineIndex])
 				{
-					pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex-1];
+					for(int i = nearestPolylinePointIndex; i < countOfPointsForPolyline[nearestPolylineIndex]-1; i++)
+					{
+						pointsForPolyline[nearestPolylineIndex][i] = pointsForPolyline[nearestPolylineIndex][i+1];
+					}
+					//pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex-1];
+					countOfPointsForPolyline[nearestPolylineIndex]--;
 				}
+				/*
 				else if(nearestPolylinePointIndex == 0 && countOfPointsForPolyline[nearestPolylineIndex]>1)
 				{
 					pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex+1];
 				}
-
+				*/
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
@@ -345,27 +351,6 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 					glFlush();
 				}
 			}
-			/*
-			if(state == GLUT_UP) 
-			{
-				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
-				pointsForPolyline[polylineIndex][nearestPointIndex].y = 480 - y;
-				//printf("Up point = %d\t%d\n",x,y);
-
-				//Update the display (clean the screen & re-render it)
-				glClear( GL_COLOR_BUFFER_BIT );
-				display();
-				glViewport(0, 0 , 640 , 480);
-				setWindow(0, 640, 0, 480);
-				//printf("size = %d\n",sizeof(pointsForDrawMode));
-				for(int i =0; i <= polylineIndex; i++)
-				{
-					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
-					glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline[i] ); 
-					glFlush();
-				}
-			}
-			*/
 			break;
 	}
 }
@@ -378,6 +363,7 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
+				nearestPointIndex = 0;
 				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(480-y)); 
 				for(int i = 1; i < pointIndex; i++)
 				{
@@ -421,7 +407,6 @@ void drawMode(int button, int state, int x, int y)
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
-
 				if(hasPrepoint == 0 || isBKeyPressed == 1)
 				{
 					//pointsForDrawMode[0] = point2( x , 480 - y); 
