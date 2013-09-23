@@ -1,4 +1,4 @@
-###Original SOUrce: 
+###Original Source: 
 http://web.cs.wpi.edu/~emmanuel/courses/cs543/f13/homework/HW1/HW1.html     
 <H3> Homework 1: <i> PoliBook</i>, an interactive polyline viewer and editor</H3>
 
