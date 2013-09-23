@@ -79,7 +79,7 @@ static char fileName[10][20] = {
 
 void initGPUBuffers( void )
 {
-	// Create a vertex array object
+    // Create a vertex array object
     GLuint vao;
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
