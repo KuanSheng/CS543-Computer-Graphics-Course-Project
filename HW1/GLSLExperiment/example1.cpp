@@ -234,11 +234,17 @@ void tEventHandler( void )
 			//when widht > height, keep height
 			if(width/(height-0.075*width) > 1.33)
 			{
-				glViewport((width-1.067*(height-0.075*width))/2, 0 , (1.067*(height-0.075*width))/6 , (height-0.075*width)/6);
+				int w = (1.067*(height-0.075*width))/6;
+				int h = (height-0.075*width)/6;
+				int leftOffset = (width - 6*w)/2; 
+				glViewport(leftOffset+w*x, 5*h-h*y , 0.8*w , 0.8*h);
 			}
 			else
 			{
-				glViewport(0, (height-0.825*width)/2 , width/6 , (0.75*width)/6);
+				int w = width/6;
+				int h = width/8;
+				int buttomOffset = (height-0.075*width-6*h)/2;
+				glViewport(w*x, 5*h+buttomOffset-h*y , 0.8*w , 0.8*h);
 			}
 			drawPolylineFile(fileName[randNum]);
 		}
@@ -334,8 +340,8 @@ void gingerbreadMan( void )
 		
 			p = points[i];
 		}
-		glViewport(0, 0 , 640 , 480);
-		setWindow(0, 640, 0, 480);
+		glViewport(0, 0 , width , height);
+		setWindow(0, width, 0, height);
 		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
 		glDrawArrays( GL_POINTS, 0, 3000 ); 
 		glFlush();
@@ -353,13 +359,13 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 			nearestPolylinePointIndex = 0;
 			if(state == GLUT_UP) 
 			{
-				GLfloat distance = abs(pointsForPolyline[0][0].x-x) + abs(pointsForPolyline[0][0].y-(480-y)); 
+				GLfloat distance = abs(pointsForPolyline[0][0].x-x) + abs(pointsForPolyline[0][0].y-(height-y)); 
 				for(int j = 0; j <= polylineIndex; j++)
 				{
 					for(int i = 0; i < countOfPointsForPolyline[j]; i++)
 					{
 						//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
-						GLfloat temp_distance = abs(pointsForPolyline[j][i].x-x) + abs(pointsForPolyline[j][i].y-(480-y));
+						GLfloat temp_distance = abs(pointsForPolyline[j][i].x-x) + abs(pointsForPolyline[j][i].y-(height-y));
 						if(distance > temp_distance)
 						{
 							distance = temp_distance;
@@ -386,8 +392,8 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
-				glViewport(0, 0 , 640 , 480);
-				setWindow(0, 640, 0, 480);
+				glViewport(0, 0 , width , height);
+				setWindow(0, width, 0, height);
 				//printf("size = %d\n",sizeof(pointsForDrawMode));
 				for(int i =0; i <= polylineIndex; i++)
 				{
@@ -409,10 +415,10 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 			if(state == GLUT_DOWN) 
 			{
 				nearestPointIndex = 0;
-				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(480-y)); 
+				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(height-y)); 
 				for(int i = 1; i < pointIndex; i++)
 				{
-					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-(480-y));
+					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-(height-y));
 					if(distance > temp_distance)
 					{
 						distance = temp_distance;
@@ -424,13 +430,13 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 			{
 				printf("New Point = (%d, %d)\n", x, y);
 				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
-				pointsForPolyline[polylineIndex][nearestPointIndex].y = 480 - y;
+				pointsForPolyline[polylineIndex][nearestPointIndex].y = height - y;
 
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
-				glViewport(0, 0 , 640 , 480);
-				setWindow(0, 640, 0, 480);
+				glViewport(0, 0 , width , height);
+				setWindow(0, width, 0, height);
 				printf("count of Polylines = %d\t%d\n",polylineIndex, countOfPointsForPolyline[polylineIndex]);
 				for(int i =0; i <= polylineIndex; i++)
 				{
@@ -455,7 +461,7 @@ void drawMode(int button, int state, int x, int y)
 				if(hasPrepoint == 0 || isBKeyPressed == 1)
 				{
 					//pointsForDrawMode[0] = point2( x , 480 - y); 
-					pointsForDrawMode[1] = point2( x , 480 - y); 
+					pointsForDrawMode[1] = point2( x , height - y); 
 					//countOfPointsForPolyline[polylineIndex] = pointIndex;
 					if(hasPrepoint != 0) 
 					{
@@ -464,20 +470,20 @@ void drawMode(int button, int state, int x, int y)
 					hasPrepoint = 1; 
 					pointIndex = 0;
 					
-					pointsForPolyline[polylineIndex][pointIndex] = point2( x , 480 - y);
+					pointsForPolyline[polylineIndex][pointIndex] = point2( x , height - y);
 					pointIndex++;
 				}
 				else
 				{
-					pointsForPolyline[polylineIndex][pointIndex] = point2( x , 480 - y);
+					pointsForPolyline[polylineIndex][pointIndex] = point2( x , height - y);
 					pointIndex++;
 
 					countOfPointsForPolyline[polylineIndex] = pointIndex;
 
 					pointsForDrawMode[0] = pointsForDrawMode[1];
-					pointsForDrawMode[1] = point2( x , 480 - y); 
-					glViewport(0, 0 , 640 , 480);
-					setWindow(0, 640, 0, 480);
+					pointsForDrawMode[1] = point2( x , height - y); 
+					glViewport(0, 0 , width , height);
+					setWindow(0, width, 0, height);
 					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForDrawMode), pointsForDrawMode, GL_STATIC_DRAW );
 					glDrawArrays( GL_LINE_STRIP, 0, 2 ); 
 					glFlush();
@@ -520,15 +526,6 @@ void myMouse(int button, int state, int x, int y)
 // reshape handler
 void myReshape(int reshapeWidth, int reshapeHeight )
 {
-	/*
-	R = (right – left)/(top – bottom);
-	if(R > W/H)
-	glViewport(0, 0, W, W/R);
-	else if(R < W/H)
-	glViewport(0, 0, H*R, H);
-	else
-	glViewport(0, 0, W, H); // equal aspect ratios
-	*/
 	//if(reshapeWidth < 300)
 	//{
 		//glutReshapeWindow( 1280, 800 );
@@ -536,6 +533,20 @@ void myReshape(int reshapeWidth, int reshapeHeight )
 	//printf("%d\t%d\n",reshapeWidth, reshapeHeight);
 	width = reshapeWidth;
 	height = reshapeHeight;
+	glutDisplayFunc( display );
+    glutKeyboardFunc( keyboard );
+	glutMouseFunc(myMouse);
+	/*
+	//not working
+	if(width/(height-0.075*width) > 1.33)
+	{
+		startPoint = point2(115*height/480, 121*height/480);
+	}
+	else
+	{
+		startPoint = point2(115*width/640, 121*width/640);
+	}
+	*/
 }
 void myInit( void )
 {
