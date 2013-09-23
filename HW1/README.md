@@ -16,20 +16,20 @@ Here goes:
 
 <BR><br><B> Step 1: Read more polyline files in GRS format:</B> <br><BR>
 Starter code is provided to ensure that your code runs on the zoolab machines right away.
-You can get the HW1 starter code <a href="cs543_hw1_starter_code.zip"> [ HERE ] </a>
+You can get the HW1 starter code <a href="../src/cs543_hw1_starter_code.zip"> [ HERE ] </a>
 Use this starter code to develop your programs.
 The following polyline files are in the GRS format:<br><br>
 
 <p>
-<A href="dino.dat">dino.dat</A><br>
-<A href="birdhead.dat">birdhead.dat</A><br>
-<A href="dragon.dat">dragon.dat</A><br>
-<A href="house.dat">house.dat</A><br>
-<A href="knight.dat">knight.dat</A><br>
-<A href="rex.dat">rex.dat</A><br>
-<A href="scene.dat">scene.dat</A><br>
-<A href="usa.dat">usa.dat</A><br>
-<A href="vinci.dat">vinci.dat</A><br><br>
+<A href="GLSLExperiment/dino.dat">dino.dat</A><br>
+<A href="GLSLExperiment /birdhead.dat">birdhead.dat</A><br>
+<A href="GLSLExperiment /dragon.dat">dragon.dat</A><br>
+<A href="GLSLExperiment /house.dat">house.dat</A><br>
+<A href="GLSLExperiment /knight.dat">knight.dat</A><br>
+<A href="GLSLExperiment /rex.dat">rex.dat</A><br>
+<A href="GLSLExperiment /scene.dat">scene.dat</A><br>
+<A href="GLSLExperiment /usa.dat">usa.dat</A><br>
+<A href="GLSLExperiment /vinci.dat">vinci.dat</A><br><br>
 
 The structure of GRS files is:
 
@@ -150,7 +150,7 @@ in class.<br><br>
 
 <br><br>
 
-<img alt="Polyline drawing diagram" border="0" src="polyline_drawing.jpg" width="500"><br><br>
+<img alt="Polyline drawing diagram" border="0" src="../images/polyline_drawing.jpg" width="500"><br><br>
 
 
 <b>Note:</b> States (p and t) are polyline viewing states in which you 
