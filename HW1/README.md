@@ -23,14 +23,14 @@ The following polyline files are in the GRS format:<br><br>
 
 <p>
 <A href="GLSLExperiment/dino.dat">dino.dat</A><br>
-<A href="GLSLExperiment /birdhead.dat">birdhead.dat</A><br>
-<A href="GLSLExperiment /dragon.dat">dragon.dat</A><br>
-<A href="GLSLExperiment /house.dat">house.dat</A><br>
-<A href="GLSLExperiment /knight.dat">knight.dat</A><br>
-<A href="GLSLExperiment /rex.dat">rex.dat</A><br>
-<A href="GLSLExperiment /scene.dat">scene.dat</A><br>
-<A href="GLSLExperiment /usa.dat">usa.dat</A><br>
-<A href="GLSLExperiment /vinci.dat">vinci.dat</A><br><br>
+<A href="GLSLExperiment/birdhead.dat">birdhead.dat</A><br>
+<A href="GLSLExperiment/dragon.dat">dragon.dat</A><br>
+<A href="GLSLExperiment/house.dat">house.dat</A><br>
+<A href="GLSLExperiment/knight.dat">knight.dat</A><br>
+<A href="GLSLExperiment/rex.dat">rex.dat</A><br>
+<A href="GLSLExperiment/scene.dat">scene.dat</A><br>
+<A href="GLSLExperiment/usa.dat">usa.dat</A><br>
+<A href="GLSLExperiment/vinci.dat">vinci.dat</A><br><br>
 
 The structure of GRS files is:
 
