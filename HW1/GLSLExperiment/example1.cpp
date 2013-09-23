@@ -25,6 +25,7 @@ void myMouse(int , int , int , int );
 void mouseMotion(int, int, GLint  , GLint  );
 void deleteHandler( int , int , GLint  , GLint);
 void gingerbreadMan( void );
+void myReshape(int , int  );
 void myInit( void );
 
 typedef vec2 point2;
@@ -474,7 +475,21 @@ void myMouse(int button, int state, int x, int y)
     }
 	
 }
-
+//----------------------------------------------------------------------------
+// reshape handler
+void myReshape(int width, int height )
+{
+	/*
+	R = (right – left)/(top – bottom);
+	if(R > W/H)
+	glViewport(0, 0, W, W/R);
+	else if(R < W/H)
+	glViewport(0, 0, H*R, H);
+	else
+	glViewport(0, 0, W, H); // equal aspect ratios
+	*/
+	printf("%d\t%d\n",width, height);
+}
 void myInit( void )
 {
 	//Draw "HELLO"
@@ -508,6 +523,7 @@ int main( int argc, char **argv )
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
 	glutMouseFunc(myMouse);
+	glutReshapeFunc(myReshape);
 
     glutMainLoop();
     return 0;
