@@ -263,6 +263,14 @@ void keyboard( unsigned char key, int x, int y )
 			glutReshapeWindow( 1280, 800 );
 			break;
 		*/	
+		
+		case 'h':
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			myInit( );
+			isIndrawMode = 0;
+			break;
+		
 		case 'p':
 			srand(time(NULL));
 			//generate a random number to select a random file
@@ -536,6 +544,7 @@ void myReshape(int reshapeWidth, int reshapeHeight )
 	glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
 	glutMouseFunc(myMouse);
+	myInit(  );
 	/*
 	//not working
 	if(width/(height-0.075*width) > 1.33)
