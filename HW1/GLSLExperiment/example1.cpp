@@ -27,10 +27,15 @@ void deleteHandler( int , int , GLint  , GLint);
 void gingerbreadMan( void );
 void myReshape(int , int  );
 void myInit( void );
+void glViewportMain(int , int );
+void glViewportThunbs(int , int );
 
 typedef vec2 point2;
 
 using namespace std;
+//windows Size
+static int width = 640;
+static int height = 480;
 
 // Number of points in polyline
 int NumPoints = 3;
@@ -168,6 +173,28 @@ void shaderSetup( void )
 }
 
 //----------------------------------------------------------------------------
+// glViewport for thumbs handler
+void glViewportThumbs(int w, int h)
+{
+
+}
+
+//----------------------------------------------------------------------------
+// glViewport for main place handler
+void glViewportMain(int w, int h)
+{
+	//when widht > height, keep height
+	if(width/(height-0.075*width) > 1.33)
+	{
+		glViewport((width-1.067*(height-0.075*width))/2, 0 , 1.067*(height-0.075*width) , height-0.075*width);
+	}
+	else
+	{
+		glViewport(0, (height-0.825*width)/2 , width , 0.75*width);
+	}
+}
+
+//----------------------------------------------------------------------------
 // this is where the drawing should happen
 
 
@@ -178,10 +205,11 @@ void display( void )
 	// Begin from here
 	////////////////////////////////////////////////////////////////
 	int thumbIndex = 0;
+	printf("width=%d\theight=%d\n", width, height);
 
 	for(thumbIndex = 0; thumbIndex < 10; thumbIndex++)
 	{
-		glViewport(64*thumbIndex,432,64 ,48);
+		glViewport(width/10*thumbIndex,height-0.075*width,width/10 ,0.075*width);
 		drawPolylineFile(fileName[thumbIndex]);
 	}
 	////////////////////////////////////////////////////////////////
@@ -203,6 +231,15 @@ void tEventHandler( void )
 		{
 			randNum = rand()%10;
 			glViewport(106*(5-x)+20,364-(62*y),64 ,48);
+			//when widht > height, keep height
+			if(width/(height-0.075*width) > 1.33)
+			{
+				glViewport((width-1.067*(height-0.075*width))/2, 0 , (1.067*(height-0.075*width))/6 , (height-0.075*width)/6);
+			}
+			else
+			{
+				glViewport(0, (height-0.825*width)/2 , width/6 , (0.75*width)/6);
+			}
 			drawPolylineFile(fileName[randNum]);
 		}
 	}
@@ -215,13 +252,19 @@ void keyboard( unsigned char key, int x, int y )
 	isBKeyPressed = 0; // Just in case
     switch ( key ) 
 	{
+		/*
+		case 'x':
+			glutReshapeWindow( 1280, 800 );
+			break;
+		*/	
 		case 'p':
 			srand(time(NULL));
 			//generate a random number to select a random file
 			randNum = rand()%10;
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
-			glViewport(32, 0 , 576 , 432);
+			glViewportMain(width, height);
+			
 			drawPolylineFile(fileName[randNum]);
 			isIndrawMode = 0;
 			glutMouseFunc(myMouse);
@@ -454,15 +497,13 @@ void myMouse(int button, int state, int x, int y)
 	{
 		case GLUT_LEFT_BUTTON:
 			// Judge whether the mouse point is clicked on thumb images
-			if(state == GLUT_DOWN && y <= 48) 
+			if(state == GLUT_DOWN && y <= 0.075*width) 
 			{
-				index = x/64;
+				index = 10*x/width;
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
-				glViewport(32, 0 , 576 , 432);
+				glViewportMain(width, height);
 				drawPolylineFile(fileName[index]);
-				//printf("x = %d\t",x);
-				//printf("y = %d\n",y);
 			};
 			break;
 		case GLUT_RIGHT_BUTTON:
@@ -477,7 +518,7 @@ void myMouse(int button, int state, int x, int y)
 }
 //----------------------------------------------------------------------------
 // reshape handler
-void myReshape(int width, int height )
+void myReshape(int reshapeWidth, int reshapeHeight )
 {
 	/*
 	R = (right – left)/(top – bottom);
@@ -488,12 +529,18 @@ void myReshape(int width, int height )
 	else
 	glViewport(0, 0, W, H); // equal aspect ratios
 	*/
-	printf("%d\t%d\n",width, height);
+	//if(reshapeWidth < 300)
+	//{
+		//glutReshapeWindow( 1280, 800 );
+	//}
+	//printf("%d\t%d\n",reshapeWidth, reshapeHeight);
+	width = reshapeWidth;
+	height = reshapeHeight;
 }
 void myInit( void )
 {
 	//Draw "HELLO"
-	glViewport(0, 0 , 640 , 480);
+	glViewport(0, 0 , width , height);
 	drawPolylineFile("hello.dat");
 }
 //----------------------------------------------------------------------------
@@ -503,7 +550,7 @@ int main( int argc, char **argv )
 	// init glut
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_RGBA | GLUT_SINGLE );
-    glutInitWindowSize( 640, 480 );
+    glutInitWindowSize( width, height );
 
     // If you are using freeglut, the next two lines will check if 
     // the code is truly 3.2. Otherwise, comment them out
