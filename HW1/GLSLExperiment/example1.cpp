@@ -64,7 +64,7 @@ static int nearestPolylinePointIndex = 0; // for d event, store point index in a
 static point2 startPoint = point2(115, 121);
 const int M = 40;
 const int L = 3;
-const int iterationTimes = 100;
+const int iterationTimes = 1000;
 static int randNum;
 
 GLuint program;
@@ -345,6 +345,7 @@ void keyboard( unsigned char key, int x, int y )
 		case 'g':
 			currentKeyboardEvent = 'g';
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
+			display();
 			gingerbreadMan();
 			isIndrawMode = 0;
 			break;
@@ -380,7 +381,7 @@ void gingerbreadMan( void )
 			p = points[i];
 		}
 		glViewport(0, 0 , width , height);
-		setWindow(0, width, 0, height);
+		setWindow(0, 640, 0, 480);
 		glBufferData( GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW );
 		glDrawArrays( GL_POINTS, 0, 3000 ); 
 		glFlush();
@@ -582,10 +583,13 @@ void myReshape(int reshapeWidth, int reshapeHeight )
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
 			glViewportMain(width, height);
-		
 			drawSixTimesSix();
 			break;
 
+		case 'g':
+			//glClear( GL_COLOR_BUFFER_BIT );
+			gingerbreadMan();
+			break;
 		default:
 			glutDisplayFunc( display );
 			glutKeyboardFunc( keyboard );
