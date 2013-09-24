@@ -29,6 +29,7 @@ void myReshape(int , int  );
 void myInit( void );
 void glViewportMain(int , int );
 void glViewportThunbs(int , int );
+void drawSixTimesSix( void );
 
 typedef vec2 point2;
 
@@ -49,6 +50,9 @@ point2 points2[3]; // for test use
 static point2 pointsForDrawMode[2];
 static point2 pointsForPolyline[100][100];
 static int isIndrawMode = 0;
+static char currentKeyboardEvent = 'h';
+
+static int randomArray[6][6] = {0}; // for T event (reshap use)
 
 static int countOfPointsForPolyline[100] = { 0 };
 static int nearestPointIndex = 0; // for m event
@@ -61,6 +65,7 @@ static point2 startPoint = point2(115, 121);
 const int M = 40;
 const int L = 3;
 const int iterationTimes = 100;
+static int randNum;
 
 GLuint program;
 GLuint ProjLoc;
@@ -79,7 +84,7 @@ static char fileName[10][20] = {
 
 void initGPUBuffers( void )
 {
-    // Create a vertex array object
+	// Create a vertex array object
     GLuint vao;
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
@@ -217,19 +222,16 @@ void display( void )
 	////////////////////////////////////////////////////////////////
 	
 }
+
 //----------------------------------------------------------------------------
 // keyboard t event handler
-void tEventHandler( void )
+void drawSixTimesSix( void )
 {
-	int x = 0;
-	int y = 0;
-	int randNum;
-	srand(time(NULL));
-	for(y = 0; y < 6; y++)
+	for(int y = 0; y < 6; y++)
 	{
-		for(x = 0; x < 6; x++)
+		for(int x = 0; x < 6; x++)
 		{
-			randNum = rand()%10;
+			//randNum = rand()%10;
 			glViewport(106*(5-x)+20,364-(62*y),64 ,48);
 			//when widht > height, keep height
 			if(width/(height-0.075*width) > 1.33)
@@ -246,15 +248,36 @@ void tEventHandler( void )
 				int buttomOffset = (height-0.075*width-6*h)/2;
 				glViewport(w*x, 5*h+buttomOffset-h*y , 0.8*w , 0.8*h);
 			}
-			drawPolylineFile(fileName[randNum]);
+			drawPolylineFile(fileName[randomArray[y][x]]);
 		}
 	}
+}
+
+//----------------------------------------------------------------------------
+// keyboard t event handler
+void tEventHandler( void )
+{
+	int x = 0;
+	int y = 0;
+	int randNum;
+	srand(time(NULL));
+	
+
+	for(y = 0; y < 6; y++)
+	{
+		for(x = 0; x < 6; x++)
+		{
+			randNum = rand()%10;
+			randomArray[y][x] = randNum;
+		}
+	}
+
+	drawSixTimesSix();
 }
 //----------------------------------------------------------------------------
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
 {
-	int randNum;
 	isBKeyPressed = 0; // Just in case
     switch ( key ) 
 	{
@@ -265,6 +288,7 @@ void keyboard( unsigned char key, int x, int y )
 		*/	
 		
 		case 'h':
+			currentKeyboardEvent = 'h';
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
 			myInit( );
@@ -272,6 +296,7 @@ void keyboard( unsigned char key, int x, int y )
 			break;
 		
 		case 'p':
+			currentKeyboardEvent = 'p';
 			srand(time(NULL));
 			//generate a random number to select a random file
 			randNum = rand()%10;
@@ -284,12 +309,14 @@ void keyboard( unsigned char key, int x, int y )
 			glutMouseFunc(myMouse);
 			break;
 		case 't':
+			currentKeyboardEvent = 't';
 			glClear( GL_COLOR_BUFFER_BIT );
 			display();
 			tEventHandler();
 			isIndrawMode = 0;
 			break;
 		case 'e':
+			currentKeyboardEvent = 'e';
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			display();
 			isIndrawMode = 1;
@@ -301,6 +328,7 @@ void keyboard( unsigned char key, int x, int y )
 			// End of drawing mode
 			break;
   		case 'm':
+			currentKeyboardEvent = 'm';
 			if(isIndrawMode == 1)
 			{
 				glutMouseFunc(mouseMotion);
@@ -308,17 +336,20 @@ void keyboard( unsigned char key, int x, int y )
 			}
 			break;
 		case 'd':
+			currentKeyboardEvent = 'd';
 			if(isIndrawMode == 1)
 			{
 				glutMouseFunc(deleteHandler);
 			}
 			break;
 		case 'g':
+			currentKeyboardEvent = 'g';
 			glClear(GL_COLOR_BUFFER_BIT); // clear the window
 			gingerbreadMan();
 			isIndrawMode = 0;
 			break;
 		case 'b':
+			currentKeyboardEvent = 'b';
 			if(isIndrawMode == 1)
 			{
 				//a issue in E keyboard
@@ -507,6 +538,7 @@ void drawMode(int button, int state, int x, int y)
 void myMouse(int button, int state, int x, int y)
 {
 	int index = 0;
+	currentKeyboardEvent = 'p';
 	switch ( button ) 
 	{
 		case GLUT_LEFT_BUTTON:
@@ -514,6 +546,7 @@ void myMouse(int button, int state, int x, int y)
 			if(state == GLUT_DOWN && y <= 0.075*width) 
 			{
 				index = 10*x/width;
+				randNum = index; // for reshape use
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
 				glViewportMain(width, height);
@@ -534,28 +567,32 @@ void myMouse(int button, int state, int x, int y)
 // reshape handler
 void myReshape(int reshapeWidth, int reshapeHeight )
 {
-	//if(reshapeWidth < 300)
-	//{
-		//glutReshapeWindow( 1280, 800 );
-	//}
-	//printf("%d\t%d\n",reshapeWidth, reshapeHeight);
 	width = reshapeWidth;
 	height = reshapeHeight;
-	glutDisplayFunc( display );
-    glutKeyboardFunc( keyboard );
-	glutMouseFunc(myMouse);
-	myInit(  );
-	/*
-	//not working
-	if(width/(height-0.075*width) > 1.33)
+	switch(currentKeyboardEvent)
 	{
-		startPoint = point2(115*height/480, 121*height/480);
+		case 'p':
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			glViewportMain(width, height);
+			drawPolylineFile(fileName[randNum]);
+			break;
+
+		case 't':
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			glViewportMain(width, height);
+		
+			drawSixTimesSix();
+			break;
+
+		default:
+			glutDisplayFunc( display );
+			glutKeyboardFunc( keyboard );
+			glutMouseFunc(myMouse);
+			myInit(  );
 	}
-	else
-	{
-		startPoint = point2(115*width/640, 121*width/640);
-	}
-	*/
+	
 }
 void myInit( void )
 {
