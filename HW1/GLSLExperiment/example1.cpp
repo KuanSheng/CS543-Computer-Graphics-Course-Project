@@ -1,8 +1,4 @@
-// Starter program for HW 0. 
-// Program draws a triangle. Study the program first
-// Then modify the function generateGeometry to draw a two-Dimensional Sierpinski Gasket       
-// Generated using randomly selected vertices and bisection
-
+// Starter program for HW 1. 
 // Angel.h is homegrown include file that also includes glew and freeglut
 
 #include <stdlib.h>
@@ -19,7 +15,6 @@ void keyboard( unsigned char key, int x, int y );
 void tEventHandler( void );
 void drawPolylineFile(char *);
 void setWindow(GLfloat ,GLfloat ,GLfloat ,GLfloat );
-void drawPolylineFile(char *);
 void drawMode(int , int , int , int);
 void myMouse(int , int , int , int );
 void mouseMotion(int, int, GLint  , GLint  );
@@ -52,10 +47,17 @@ static point2 pointsForPolyline[100][100];
 static int isIndrawMode = 0;
 static char currentKeyboardEvent = 'h';
 
-static int randomArray[6][6] = {0}; // for T event (reshap use)
+static int randomArray[6][6] = {0}; // for T event (reshape use)
 
 static int countOfPointsForPolyline[100] = { 0 };
 static int nearestPointIndex = 0; // for m event
+
+//store the origin size when e event happend
+static int originWidthForE = 0;
+static int originHeightForE = 0;
+// the following two are not used for this time
+static int lastWidthForE = 0;
+static int lastHeightForE = 0;
 
 static int nearestPolylineIndex = 0; // for d event, store polyline index
 static int nearestPolylinePointIndex = 0; // for d event, store point index in above polyline
@@ -65,7 +67,10 @@ static point2 startPoint = point2(115, 121);
 const int M = 40;
 const int L = 3;
 const int iterationTimes = 1000;
+// store the random picked file index, used for reshape
 static int randNum;
+//ratio is not used this time
+static float ratio = 0; 
 
 GLuint program;
 GLuint ProjLoc;
@@ -188,6 +193,7 @@ void glViewportThumbs(int w, int h)
 // glViewport for main place handler
 void glViewportMain(int w, int h)
 {
+	//keep the main panel is the center, and no distortion
 	//when widht > height, keep height
 	if(width/(height-0.075*width) > 1.33)
 	{
@@ -205,6 +211,8 @@ void glViewportMain(int w, int h)
 
 void display( void )
 {
+	//Just display 10 thumbnails at the top, no other operations
+
     //glClear( GL_COLOR_BUFFER_BIT );     // clear the window, Comment it, otherwise, when left click, there will be obvious page refresh
 	////////////////////////////////////////////////////////////////
 	// Begin from here
@@ -227,6 +235,7 @@ void display( void )
 // keyboard t event handler
 void drawSixTimesSix( void )
 {
+	//Draw 6*6 thumbnails in the main panel, with the file indexes stored in the randomArray
 	for(int y = 0; y < 6; y++)
 	{
 		for(int x = 0; x < 6; x++)
@@ -257,6 +266,7 @@ void drawSixTimesSix( void )
 // keyboard t event handler
 void tEventHandler( void )
 {
+	// Generate the 6*6 random integer from (1,10), then call drawSixTimesSix( ) to draw thumbnails
 	int x = 0;
 	int y = 0;
 	int randNum;
@@ -281,12 +291,6 @@ void keyboard( unsigned char key, int x, int y )
 	isBKeyPressed = 0; // Just in case
     switch ( key ) 
 	{
-		/*
-		case 'x':
-			glutReshapeWindow( 1280, 800 );
-			break;
-		*/	
-		
 		case 'h':
 			currentKeyboardEvent = 'h';
 			glClear( GL_COLOR_BUFFER_BIT );
@@ -308,6 +312,7 @@ void keyboard( unsigned char key, int x, int y )
 			isIndrawMode = 0;
 			glutMouseFunc(myMouse);
 			break;
+
 		case 't':
 			currentKeyboardEvent = 't';
 			glClear( GL_COLOR_BUFFER_BIT );
@@ -328,7 +333,7 @@ void keyboard( unsigned char key, int x, int y )
 			// End of drawing mode
 			break;
   		case 'm':
-			currentKeyboardEvent = 'm';
+			currentKeyboardEvent = 'e';
 			if(isIndrawMode == 1)
 			{
 				glutMouseFunc(mouseMotion);
@@ -336,7 +341,7 @@ void keyboard( unsigned char key, int x, int y )
 			}
 			break;
 		case 'd':
-			currentKeyboardEvent = 'd';
+			currentKeyboardEvent = 'e';
 			if(isIndrawMode == 1)
 			{
 				glutMouseFunc(deleteHandler);
@@ -350,7 +355,7 @@ void keyboard( unsigned char key, int x, int y )
 			isIndrawMode = 0;
 			break;
 		case 'b':
-			currentKeyboardEvent = 'b';
+			currentKeyboardEvent = 'e';
 			if(isIndrawMode == 1)
 			{
 				//a issue in E keyboard
@@ -392,6 +397,8 @@ void gingerbreadMan( void )
 // delete handler
 void deleteHandler( int button, int state, GLint  x, GLint y)
 {
+	float currentX = 1.0*x*originWidthForE/width ;
+	float currentY = 1.0*originHeightForE - 1.0*y*originHeightForE/height; 
 	switch ( button ) 
 	{
 		case GLUT_LEFT_BUTTON:
@@ -399,13 +406,13 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 			nearestPolylinePointIndex = 0;
 			if(state == GLUT_UP) 
 			{
-				GLfloat distance = abs(pointsForPolyline[0][0].x-x) + abs(pointsForPolyline[0][0].y-(height-y)); 
+				GLfloat distance = abs(pointsForPolyline[0][0].x-currentX) + abs(pointsForPolyline[0][0].y-currentY); 
 				for(int j = 0; j <= polylineIndex; j++)
 				{
 					for(int i = 0; i < countOfPointsForPolyline[j]; i++)
 					{
 						//printf("Distance = %f\n",abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-y));
-						GLfloat temp_distance = abs(pointsForPolyline[j][i].x-x) + abs(pointsForPolyline[j][i].y-(height-y));
+						GLfloat temp_distance = abs(pointsForPolyline[j][i].x-currentX) + abs(pointsForPolyline[j][i].y-currentY);
 						if(distance > temp_distance)
 						{
 							distance = temp_distance;
@@ -420,20 +427,15 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 					{
 						pointsForPolyline[nearestPolylineIndex][i] = pointsForPolyline[nearestPolylineIndex][i+1];
 					}
-					//pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex-1];
 					countOfPointsForPolyline[nearestPolylineIndex]--;
 				}
-				/*
-				else if(nearestPolylinePointIndex == 0 && countOfPointsForPolyline[nearestPolylineIndex]>1)
-				{
-					pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex] = pointsForPolyline[nearestPolylineIndex][nearestPolylinePointIndex+1];
-				}
-				*/
+
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
 				glViewport(0, 0 , width , height);
-				setWindow(0, width, 0, height);
+				//setWindow(0, width, 0, height);
+				setWindow(0, originWidthForE, 0, originHeightForE);
 				//printf("size = %d\n",sizeof(pointsForDrawMode));
 				for(int i =0; i <= polylineIndex; i++)
 				{
@@ -449,16 +451,20 @@ void deleteHandler( int button, int state, GLint  x, GLint y)
 // drawing handler
 void mouseMotion( int button, int state, GLint  x, GLint y)
 {
+	float currentX = 1.0*x*originWidthForE/width ;
+	float currentY = 1.0*originHeightForE - 1.0*y*originHeightForE/height; 
+
 	switch ( button ) 
 	{
 		case GLUT_LEFT_BUTTON:
 			if(state == GLUT_DOWN) 
 			{
 				nearestPointIndex = 0;
-				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-x) + abs(pointsForPolyline[polylineIndex][0].y-(height-y)); 
+				// Use Manhattan distance here
+				GLfloat distance = abs(pointsForPolyline[polylineIndex][0].x-currentX) + abs(pointsForPolyline[polylineIndex][0].y-currentY); 
 				for(int i = 1; i < pointIndex; i++)
 				{
-					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-x) + abs(pointsForPolyline[polylineIndex][i].y-(height-y));
+					GLfloat temp_distance = abs(pointsForPolyline[polylineIndex][i].x-currentX) + abs(pointsForPolyline[polylineIndex][i].y-currentY);
 					if(distance > temp_distance)
 					{
 						distance = temp_distance;
@@ -469,14 +475,15 @@ void mouseMotion( int button, int state, GLint  x, GLint y)
 			if(state == GLUT_UP) 
 			{
 				printf("New Point = (%d, %d)\n", x, y);
-				pointsForPolyline[polylineIndex][nearestPointIndex].x = x;
-				pointsForPolyline[polylineIndex][nearestPointIndex].y = height - y;
+				pointsForPolyline[polylineIndex][nearestPointIndex].x = currentX;
+				pointsForPolyline[polylineIndex][nearestPointIndex].y = currentY;
 
 				//Update the display (clean the screen & re-render it)
 				glClear( GL_COLOR_BUFFER_BIT );
 				display();
 				glViewport(0, 0 , width , height);
-				setWindow(0, width, 0, height);
+				//setWindow(0, width, 0, height);
+				setWindow(0, originWidthForE, 0, originHeightForE);
 				printf("count of Polylines = %d\t%d\n",polylineIndex, countOfPointsForPolyline[polylineIndex]);
 				for(int i =0; i <= polylineIndex; i++)
 				{
@@ -500,8 +507,20 @@ void drawMode(int button, int state, int x, int y)
 			{
 				if(hasPrepoint == 0 || isBKeyPressed == 1)
 				{
-					//pointsForDrawMode[0] = point2( x , 480 - y); 
-					pointsForDrawMode[1] = point2( x , height - y); 
+					if(hasPrepoint == 0)
+					{
+						originWidthForE = width;
+						originHeightForE = height;
+					}
+					if(width/height > originWidthForE/originHeightForE)
+					{
+						ratio = 1.0 * originHeightForE / height;
+					}
+					else
+					{
+						ratio = 1.0 * originWidthForE / width;
+					}
+					pointsForDrawMode[1] = point2( 1.0*x*originWidthForE/width , 1.0*originHeightForE - 1.0*y*originHeightForE/height); //point2( x , height - y); //point2( x*ratio , (height - y)*ratio); 
 					//countOfPointsForPolyline[polylineIndex] = pointIndex;
 					if(hasPrepoint != 0) 
 					{
@@ -510,23 +529,47 @@ void drawMode(int button, int state, int x, int y)
 					hasPrepoint = 1; 
 					pointIndex = 0;
 					
-					pointsForPolyline[polylineIndex][pointIndex] = point2( x , height - y);
+					pointsForPolyline[polylineIndex][pointIndex] = point2( 1.0*x*originWidthForE/width , 1.0*originHeightForE - 1.0*y*originHeightForE/height); //point2( x*ratio , originHeightForE - y*ratio); //point2( x , height - y);
 					pointIndex++;
+					lastWidthForE = width;
+					lastHeightForE = height;
 				}
 				else
 				{
-					pointsForPolyline[polylineIndex][pointIndex] = point2( x , height - y);
+					if(width/height > originWidthForE/originHeightForE)
+					{
+						ratio = 1.0 * originHeightForE / height;
+					}
+					else
+					{
+						ratio = 1.0 * originWidthForE / width;
+					}
+					pointsForPolyline[polylineIndex][pointIndex] = point2( 1.0*x*originWidthForE/width , 1.0*originHeightForE - 1.0*y*originHeightForE/height); //point2( x*ratio , originHeightForE - y*ratio); //point2( x , height - y);
 					pointIndex++;
 
 					countOfPointsForPolyline[polylineIndex] = pointIndex;
 
 					pointsForDrawMode[0] = pointsForDrawMode[1];
-					pointsForDrawMode[1] = point2( x , height - y); 
+
+					pointsForDrawMode[1] = point2( 1.0*x*originWidthForE/width , 1.0*originHeightForE - 1.0*y*originHeightForE/height); //point2( x , height - y); //point2( x*ratio , (height - y)*ratio);  
+					
 					glViewport(0, 0 , width , height);
-					setWindow(0, width, 0, height);
+					/*
+					if(width/height > originWidthForE/originHeightForE)
+					{
+						glViewport(0, 0 , width*ratio , height);
+					}
+					else
+					{
+						glViewport(0, 0 , width , height*ratio);
+					}
+					*/
+					setWindow(0, originWidthForE, 0, originHeightForE);
 					glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForDrawMode), pointsForDrawMode, GL_STATIC_DRAW );
 					glDrawArrays( GL_LINE_STRIP, 0, 2 ); 
 					glFlush();
+					lastWidthForE = width;
+					lastHeightForE = height;
 				}
 				isBKeyPressed = 0;
 			}
@@ -590,6 +633,35 @@ void myReshape(int reshapeWidth, int reshapeHeight )
 			//glClear( GL_COLOR_BUFFER_BIT );
 			gingerbreadMan();
 			break;
+
+		case 'e':
+			isIndrawMode = 1;
+			glClear( GL_COLOR_BUFFER_BIT );
+			display();
+			//glViewport(0, 0 , width , height);
+			int tempWidth, tempHeight;
+			if(width/height > originWidthForE/originHeightForE)
+			{
+				tempWidth = height * originWidthForE/originHeightForE;
+				tempHeight = height;
+			}
+			else
+			{
+				tempWidth = width;
+				tempHeight = width * originHeightForE/originWidthForE ;
+			}
+			//maintain correct aspect ratio
+			glViewport(0, 0 , tempWidth , tempHeight);
+			setWindow(0, originWidthForE, 0, originHeightForE);
+			for(int i =0; i <= polylineIndex; i++)
+			{
+				glBufferData( GL_ARRAY_BUFFER, sizeof(pointsForPolyline[0]), pointsForPolyline[i], GL_STATIC_DRAW );
+				glDrawArrays( GL_LINE_STRIP, 0, countOfPointsForPolyline[i] ); 
+				glFlush();
+			}
+			//glutMouseFunc(drawMode);
+			break;
+
 		default:
 			glutDisplayFunc( display );
 			glutKeyboardFunc( keyboard );
