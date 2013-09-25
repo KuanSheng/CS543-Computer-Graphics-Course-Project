@@ -1,4 +1,4 @@
-<blockquote><font size="2" ,="" face="Helvetica,Arial,sans-serif"><!------------------------------------------------------------------>
+###Original Link: http://web.cs.wpi.edu/~emmanuel/courses/cs543/f13/homework/HW2/HW2.html 
 
 <h2> Homework 2: Due Tuesday October 8, 2013, emailed by class time (10/100 points) </h2>
 
@@ -375,14 +375,6 @@ tie in your filenames. Most importantly, give clear instructions on how
 to compile and run your program. <b>MAKE SURE IT RUNS</b> before submission. 
 Name your zip file according to the convention <i>FirstName_lastName_hw2.zip</i> <br> <br>
 
-
-<!------------------------------------------------------------------>
-  <p><br>
-  </p></font><blockquote><font size="2" ,="" face="Helvetica,Arial,sans-serif">
-    <p align="center"><a onmouseover="self.status='Send feedback to the creator of this page.';return true" href="http://www.cs.wpi.edu/feedback.html"><img height="25" alt="[Feedback]" src="../../../../../Emmanuel_files/feedback.gif" width="150" border="0"></a> <a onmouseover="self.status='Search for specific information about the CS department.';return true" href="http://www.cs.wpi.edu/search.html"><img height="25" alt="[Search Our Web]" src="../../../../../Emmanuel_files/search.gif" width="150" border="0"></a> <a onmouseover="self.status='Get help and see an outline of the CS web.';return true" href="http://www.cs.wpi.edu/help.html"><img height="25" alt="[Help &amp; Index]" src="../../../../../Emmanuel_files/help.gif" width="150" border="0"></a><br>
-    </p><p align="center"><a href="http://www.wpi.edu/"><img alt="[Return to the WPI Homepage]" src="../../../../../Emmanuel_files/seal.gif" border="0"></a> <a href="http://www.cs.wpi.edu/"><img alt="[Return to CS Homepage]" src="../../../../../Emmanuel_files/new_cs.gif" border="0"></a> 
-    </p><address>
-    <p align="center"><small><a href="mailto:emmanuel@cs.wpi.edu">mailto:emmanuel@cs.wpi.edu</a></small></p></address></font></blockquote></font></blockquote>
 
 
 Please read:
