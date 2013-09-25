@@ -1,0 +1,27 @@
+﻿Build started 11/7/2011 5:22:51 PM.
+     1>Project "C:\temp\Graphics_Starting_Code_2\GLSLExperiment\GLSLExperiment.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "Debug\GLSLExperiment.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "Debug\GLSLExperiment.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I..\glew\lib /I..\glew\include /I..\freeglut\include\GL /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt example1.cpp InitShader.cpp textfile.cpp
+         textfile.cpp
+         InitShader.cpp
+         example1.cpp
+         Generating Code...
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\temp\Graphics_Starting_Code_2\Debug\GLSLExperiment.exe" /NOLOGO /LIBPATH:..\glew\lib /LIBPATH:..\freeglut\lib freeglut.lib glew32.lib glew32s.lib opengl32.lib glu32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\GLSLExperiment.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\temp\Graphics_Starting_Code_2\Debug\GLSLExperiment.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\temp\Graphics_Starting_Code_2\Debug\GLSLExperiment.lib" /MACHINE:X86 Debug\example1.obj
+         Debug\InitShader.obj
+         Debug\textfile.obj
+         GLSLExperiment.vcxproj -> C:\temp\Graphics_Starting_Code_2\Debug\GLSLExperiment.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\temp\Graphics_Starting_Code_2\Debug\GLSLExperiment.exe;#1" /manifest Debug\GLSLExperiment.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\GLSLExperiment.unsuccessfulbuild".
+         Touching "Debug\GLSLExperiment.lastbuildstate".
+     1>Done Building Project "C:\temp\Graphics_Starting_Code_2\GLSLExperiment\GLSLExperiment.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.41
