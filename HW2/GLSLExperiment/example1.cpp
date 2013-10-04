@@ -100,13 +100,11 @@ void generateGeometry( void )
      // set up vertex arrays
     GLuint vPosition = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( vPosition );
-    glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0,
-			   BUFFER_OFFSET(0) );
+    glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
     GLuint vColor = glGetAttribLocation( program, "vColor" ); 
     glEnableVertexAttribArray( vColor );
-    glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0,
-			   BUFFER_OFFSET(sizeof(points)) );
+    glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)) );
 
 	// sets the default color to clear screen
     glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
@@ -218,10 +216,11 @@ void display( void )
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
 {
-    switch ( key ) {
-    case 033:
-        exit( EXIT_SUCCESS );
-        break;
+    switch ( key ) 
+	{
+		case 033:
+			exit( EXIT_SUCCESS );
+			break;
     }
 }
 
