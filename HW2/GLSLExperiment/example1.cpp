@@ -22,6 +22,7 @@ void drawFile();
 void displayFileInScreen( void );
 void move( void );
 void moveCtrl( void );
+void variableReset( void );
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -100,7 +101,7 @@ static float xMove = 0;
 static float yMove = 0;
 static float zMove = 0;
 static int direction = 0;
-int step = 0;
+float step = 0;
 int stopFlag = 0;
 void readVertexAndFaceFromFile(int fileIndex)
 {
@@ -400,6 +401,8 @@ void display( void )
 }
 void move( void )
 {
+	//printf("direction = %d zMove = %f\n",direction, zMove);
+
 	switch(direction)
 	{
 		case X_LEFT:
@@ -410,21 +413,21 @@ void move( void )
 			break;
 
 		case X_RIGHT:
-			step = (xMax-xMin)/500;
+			step = (xMax-xMin)/50;
 			xMove += step;
 			displayFileInScreen();
 			glutPostRedisplay();
 			break;
 
 		case Y_UP:
-			step = (yMax-yMin)/500;
+			step = (yMax-yMin)/50;
 			yMove += step;
 			displayFileInScreen();
 			glutPostRedisplay();
 			break;
 
 		case Y_DOWN:
-			step = (yMax-yMin)/500;
+			step = (yMax-yMin)/50;
 			yMove -= step;
 			displayFileInScreen();
 			glutPostRedisplay();
@@ -460,6 +463,15 @@ void moveCtrl( void )
 		displayFileInScreen();
 	}
 }
+void variableReset( void )
+{
+	xMove = 0;
+	yMove = 0;
+	zMove = 0;
+	direction = 0;
+	step = 0;
+	stopFlag = 0;
+}
 //----------------------------------------------------------------------------
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
@@ -467,13 +479,16 @@ void keyboard( unsigned char key, int x, int y )
     switch ( key ) 
 	{
 		case 'w':
+			variableReset();
 			displayFileInScreen();
 			break;
 		case 'n':
+			variableReset();
 			fileIndex++;
 			displayFileInScreen();
 			break;
 		case 'p':
+			variableReset();
 			fileIndex--;
 			displayFileInScreen();
 			break;
