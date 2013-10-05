@@ -5,8 +5,8 @@
 
 
 //----------------------------------------------------------------------------
-int width = 0;
-int height = 0;
+int width = 512;
+int height = 512;
 
 // remember to prototype
 void readVertexAndFaceFromFile(int);
@@ -14,6 +14,7 @@ void generateGeometry( void );
 void display( void );
 void keyboard( unsigned char key, int x, int y );
 void drawFile();
+void displayFileInScreen( void );
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -66,13 +67,13 @@ static char fileName[43][20] = {
 						 "ketchup.ply", 
 						 "big_spider.ply", 
 						 "canstick.ply", 
+						 "big_dodge.ply", 
+						 "big_porsche.ply",
 						 "ant.ply", 
 						 "apple.ply", 
 						 "balance.ply",
 						 "beethoven.ply",
-						 "big_atc.ply", 
-						 "big_dodge.ply", 
-						 "big_porsche.ply"
+						 "big_atc.ply"
 						};
 
 
@@ -82,21 +83,21 @@ point4 pointsBuf[60000];
 color4 colorsBuf[60000] = {color4( 0.0, 1.0, 0.0, 1.0 )};
 color4 colors[36];
 
-face3    face[10000];
-static int countOfVertex, countOfFace; 
+face3    face[20000];
+static int countOfVertex;
+static long countOfFace; 
 static float xMax, xMin, yMax, yMin, zMax, zMin;
+static int fileIndex = 0;
 
 void readVertexAndFaceFromFile(int fileIndex)
 {
 	char line[256];
 	FILE *inStream;
-	//int countOfVertex, countOfFace; 
 	int lineNum = 0;
-	char tmp1[20], tmp2[20];
 	float x,y,z;
 	int vertex1, vertex2, vertex3;
 
-	xMax = yMax = zMax = FLT_MIN ;
+	xMax = yMax = zMax = -999999;
 	xMin = yMin = zMin = FLT_MAX;
 
 	if((inStream = fopen(fileName[fileIndex], "rt")) == NULL) // Open The File
@@ -116,7 +117,8 @@ void readVertexAndFaceFromFile(int fileIndex)
 		}
 		else if(strcmp(line, "face") == 0)
 		{
-			fscanf(inStream, "%d",&countOfFace);
+			fscanf(inStream, "%ld",&countOfFace);
+
 		}
 		else if(strcmp(line, "end_header") == 0)
 		{
@@ -131,7 +133,14 @@ void readVertexAndFaceFromFile(int fileIndex)
 	
 	for(int j = 0; j < countOfVertex; j++)
 	{	//read each vertex
+		
 		fscanf(inStream,"%f %f %f", &x, &y, &z);
+		if(j == 0)
+		{
+			xMax = xMin = x;
+			yMax = yMin = y;
+			zMax = zMin = z;
+		}
 		points[j] =  point4( x, y, z, 1.0 );
 		//printf("%f %f %f\n", x,y,z);
 		if(xMax < x) xMax = x;
@@ -141,7 +150,12 @@ void readVertexAndFaceFromFile(int fileIndex)
 		if(yMin > y) yMin = y;
 		if(zMin > z) zMin = z;
 	}
-
+	/*
+	for(int j = 0; j < countOfVertex; j++)
+	{
+		printf("%d: %f %f %f\n", j, points[j].x,points[j].y,points[j].z);
+	}
+	*/
 	for(int j = 0; j < countOfFace; j++)
 	{	//read each vertex
 		fscanf(inStream,"%d %d %d %d ", &lineNum, &vertex1, &vertex2, &vertex3);
@@ -197,6 +211,7 @@ void drawFile()
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	for(int i = 0; i < countOfFace*3; i=i+3)
 	{
+		//printf("index = %d\n", i/3);
 		pointsBuf[i] = points[face[i/3].vertex1];
 		pointsBuf[i+1] = points[face[i/3].vertex2];
 		pointsBuf[i+2] = points[face[i/3].vertex3];
@@ -208,11 +223,76 @@ void drawFile()
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf) + sizeof(colorsBuf), NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsBuf), pointsBuf );
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsBuf), sizeof(colorsBuf), colorsBuf );
+
 	glEnable( GL_DEPTH_TEST );
+	
     glDrawArrays( GL_TRIANGLES, 0, countOfFace*3 );
 	glDisable( GL_DEPTH_TEST ); 
-}
+	
+	glFlush(); // force output to graphics hardware
 
+	// use this call to double buffer
+	glutSwapBuffers();
+}
+void displayFileInScreen( void )
+{
+	printf("fileIndex = %d \t",fileIndex);
+	if(fileIndex < 0)
+	{
+		fileIndex = 42;
+	}
+	if(fileIndex > 42)
+	{
+		fileIndex = 0;
+	}
+	printf("%d \n",fileIndex);
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );     // clear the window
+	readVertexAndFaceFromFile(fileIndex);
+
+	//printf("Go through file!\n");
+	Angel::mat4 perspectiveMat = Angel::Perspective((GLfloat)60.0, (GLfloat)width/(GLfloat)height, (GLfloat)0.1, (GLfloat) 10000.0);
+
+	float viewMatrixf[16];
+	viewMatrixf[0] = perspectiveMat[0][0];viewMatrixf[4] = perspectiveMat[0][1];
+	viewMatrixf[1] = perspectiveMat[1][0];viewMatrixf[5] = perspectiveMat[1][1];
+	viewMatrixf[2] = perspectiveMat[2][0];viewMatrixf[6] = perspectiveMat[2][1];
+	viewMatrixf[3] = perspectiveMat[3][0];viewMatrixf[7] = perspectiveMat[3][1];
+
+	viewMatrixf[8] = perspectiveMat[0][2];viewMatrixf[12] = perspectiveMat[0][3];
+	viewMatrixf[9] = perspectiveMat[1][2];viewMatrixf[13] = perspectiveMat[1][3];
+	viewMatrixf[10] = perspectiveMat[2][2];viewMatrixf[14] = perspectiveMat[2][3];
+	viewMatrixf[11] = perspectiveMat[3][2];viewMatrixf[15] = perspectiveMat[3][3];
+
+	Angel::mat4 modelMat = Angel::identity();
+
+	printf("vex = %d\t face = %d\n", countOfVertex, countOfFace);
+	printf("xMax = %f\n", xMax);
+	printf("xMin = %f\n", xMin);
+	printf("yMax = %f\n", yMax);
+	printf("yMin = %f\n", yMin);
+	printf("zMax = %f\n", zMax);
+	printf("zMin = %f\n\n", zMin);
+	
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
+	float modelMatrixf[16];
+	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
+	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
+	modelMatrixf[2] = modelMat[2][0];modelMatrixf[6] = modelMat[2][1];
+	modelMatrixf[3] = modelMat[3][0];modelMatrixf[7] = modelMat[3][1];
+
+	modelMatrixf[8] = modelMat[0][2];modelMatrixf[12] = modelMat[0][3];
+	modelMatrixf[9] = modelMat[1][2];modelMatrixf[13] = modelMat[1][3];
+	modelMatrixf[10] = modelMat[2][2];modelMatrixf[14] = modelMat[2][3];
+	modelMatrixf[11] = modelMat[3][2];modelMatrixf[15] = modelMat[3][3];
+	
+	// set up projection matricies
+	GLuint modelMatrix = glGetUniformLocationARB(program, "model_matrix");
+	glUniformMatrix4fv( modelMatrix, 1, GL_FALSE, modelMatrixf );
+	GLuint viewMatrix = glGetUniformLocationARB(program, "projection_matrix");
+	glUniformMatrix4fv( viewMatrix, 1, GL_FALSE, viewMatrixf);
+
+    drawFile();
+}
 //----------------------------------------------------------------------------
 // this is where the drawing should happen
 void display( void )
@@ -262,7 +342,7 @@ void display( void )
 	// WARNING1: I believe Angel::transpose(...) does not transpose a mat4, but just returns
 	// an identical matrix, can anyone verify this?
 
-	readVertexAndFaceFromFile(22);
+	readVertexAndFaceFromFile(fileIndex);
 	Angel::mat4 perspectiveMat = Angel::Perspective((GLfloat)45.0, (GLfloat)width/(GLfloat)height, (GLfloat)0.1, (GLfloat) 100.0);
 
 	float viewMatrixf[16];
@@ -287,7 +367,7 @@ void display( void )
 	printf("zMax = %f\n", zMax);
 	printf("zMin = %f\n", zMin);
 	*/
-	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))*1.2) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))) * Angel::RotateY(20.0f) * Angel::RotateX(0.0f);
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -306,10 +386,6 @@ void display( void )
 	glUniformMatrix4fv( viewMatrix, 1, GL_FALSE, viewMatrixf);
 
 	drawFile();
-    glFlush(); // force output to graphics hardware
-
-	// use this call to double buffer
-	glutSwapBuffers();
 	// you can implement your own buffers with textures
 }
 
@@ -321,16 +397,15 @@ void keyboard( unsigned char key, int x, int y )
     switch ( key ) 
 	{
 		case 'w':
-			drawFile();
-			/*
-			printf("file name = %s\n", fileName[1]);
-			printf("countOfVertex = %d\n", countOfVertex);
-			printf("countOfFace = %d\n", countOfFace);
-			for(int j = 0; j < 10; j++)
-			{	//read each vertex
-				printf("face = %d %d %d\n", face[j].vertex1, face[j].vertex2, face[j].vertex3);
-			}
-			*/
+			displayFileInScreen();
+			break;
+		case 'n':
+			fileIndex++;
+			displayFileInScreen();
+			break;
+		case 'p':
+			fileIndex--;
+			displayFileInScreen();
 			break;
 		case 033:
 			exit( EXIT_SUCCESS );
@@ -362,7 +437,7 @@ int main( int argc, char **argv )
     generateGeometry();
 
 	// assign handlers
-    glutDisplayFunc( display );
+    glutDisplayFunc( displayFileInScreen );
     glutKeyboardFunc( keyboard );
 	// should add menus
 	// add mouse handler
