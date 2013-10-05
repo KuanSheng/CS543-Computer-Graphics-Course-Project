@@ -16,6 +16,7 @@ void keyboard( unsigned char key, int x, int y );
 void quad( int a, int b, int c, int d );
 void colorcube(void);
 void drawCube(void);
+void drawFile();
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -33,11 +34,6 @@ using namespace std;
 
 const int NumVertices = 10000; 
 
-point4 points[10000];
-color4 colors[10000];
-face3    face[10000];
-static int countOfVertex, countOfFace; 
-
 static char fileName[43][20] = {
 						 "airplane.ply", 
 						 "weathervane.ply", 
@@ -45,7 +41,7 @@ static char fileName[43][20] = {
 						 "part.ply", 
 						 "pickup_big.ply", 
 						 "pump.ply", 
-						 "pump_tb.ply", 
+						 "pumpa_tb.ply", 
 						 "sandal.ply", 
 						 "saratoga.ply",
 						 "scissors.ply",
@@ -99,15 +95,25 @@ point4 vertices[8] =
 // RGBA colors
 color4 vertex_colors[8] = 
 {
-    color4( 0.0, 0.0, 0.0, 1.0 ),  // black
-    color4( 1.0, 0.0, 0.0, 1.0 ),  // red
-    color4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
-    color4( 0.0, 1.0, 0.0, 1.0 ),  // green
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // black
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // red
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // yellow
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // green
     color4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    color4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
-    color4( 1.0, 1.0, 1.0, 1.0 ),  // white
-    color4( 0.0, 1.0, 1.0, 1.0 )   // cyan
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // magenta
+    color4( 0.0, 0.0, 1.0, 1.0 ),  // white
+    color4( 0.0, 0.0, 1.0, 1.0 )   // cyan
 };
+
+point4 points[10000];
+
+point4 pointsBuf[50000];
+color4 colorsBuf[50000] = {color4( 0.0, 0.0, 1.0, 1.0 )};
+color4 colors[36];
+
+face3    face[10000];
+static int countOfVertex, countOfFace; 
+float xMax, xMin, yMax, yMin, zMax, zMin;
 
 void readVertexAndFaceFromFile(int fileIndex)
 {
@@ -118,6 +124,9 @@ void readVertexAndFaceFromFile(int fileIndex)
 	char tmp1[20], tmp2[20];
 	float x,y,z;
 	int vertex1, vertex2, vertex3;
+
+	xMax = yMax = zMax = -10000;
+	xMin = yMin = zMin = 10000;
 
 	if((inStream = fopen(fileName[fileIndex], "rt")) == NULL) // Open The File
 	{
@@ -153,6 +162,13 @@ void readVertexAndFaceFromFile(int fileIndex)
 	{	//read each vertex
 		fscanf(inStream,"%f %f %f", &x, &y, &z);
 		points[j] =  point4( x, y, z, 1.0 );
+
+		if(xMax < x) xMax = x;
+		if(yMax < y) yMax = y;
+		if(zMax < z) zMax = z;
+		if(xMin > x) xMin = x;
+		if(yMin > y) yMin = y;
+		if(zMin > z) zMin = z;
 	}
 
 	for(int j = 0; j < countOfFace; j++)
@@ -166,7 +182,6 @@ void readVertexAndFaceFromFile(int fileIndex)
 
 	fclose(inStream);
 }
-
 
 // quad generates two triangles for each face and assigns colors
 //    to the vertices
@@ -205,9 +220,9 @@ void generateGeometry( void )
     GLuint buffer;
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+    //glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
+    //glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
+    //glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
 
 
 	// Load shaders and use the resulting shader program
@@ -220,7 +235,7 @@ void generateGeometry( void )
 
     GLuint vColor = glGetAttribLocation( program, "vColor" ); 
     glEnableVertexAttribArray( vColor );
-    glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(points)) );
+    glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pointsBuf)) );
 
 	// sets the default color to clear screen
     glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
@@ -236,6 +251,27 @@ void drawCube(void)
 	// in case you need to draw overlays
 	glEnable( GL_DEPTH_TEST );
     glDrawArrays( GL_TRIANGLES, 0, NumVertices );
+	glDisable( GL_DEPTH_TEST ); 
+}
+
+void drawFile()
+{
+	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	for(int i = 0; i < countOfFace*3; i=i+3)
+	{
+		pointsBuf[i] = points[face[i/3].vertex1];
+		pointsBuf[i+1] = points[face[i/3].vertex2];
+		pointsBuf[i+2] = points[face[i/3].vertex3];
+		colorsBuf[i] = color4( 0.0, 0.0, 1.0, 1.0 );
+		colorsBuf[i+1] = color4( 0.0, 0.0, 1.0, 1.0 );
+		colorsBuf[i+2] = color4( 0.0, 0.0, 1.0, 1.0 );
+	}
+	//glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf), pointsBuf, GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf) + sizeof(colorsBuf), NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsBuf), pointsBuf );
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsBuf), sizeof(colorsBuf), colorsBuf );
+	glEnable( GL_DEPTH_TEST );
+    glDrawArrays( GL_TRIANGLES, 0, countOfFace*3 );
 	glDisable( GL_DEPTH_TEST ); 
 }
 
@@ -287,6 +323,8 @@ void display( void )
 
 	// WARNING1: I believe Angel::transpose(...) does not transpose a mat4, but just returns
 	// an identical matrix, can anyone verify this?
+
+	readVertexAndFaceFromFile(0);
 	Angel::mat4 perspectiveMat = Angel::Perspective((GLfloat)45.0, (GLfloat)width/(GLfloat)height, (GLfloat)0.1, (GLfloat) 100.0);
 
 	float viewMatrixf[16];
@@ -299,9 +337,11 @@ void display( void )
 	viewMatrixf[9] = perspectiveMat[1][2];viewMatrixf[13] = perspectiveMat[1][3];
 	viewMatrixf[10] = perspectiveMat[2][2];viewMatrixf[14] = perspectiveMat[2][3];
 	viewMatrixf[11] = perspectiveMat[3][2];viewMatrixf[15] = perspectiveMat[3][3];
+
 	
+
 	Angel::mat4 modelMat = Angel::identity();
-	modelMat = modelMat * Angel::Translate(0.0, 0.0, -2.0f) * Angel::RotateY(45.0f) * Angel::RotateX(35.0f);
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -319,7 +359,8 @@ void display( void )
 	GLuint viewMatrix = glGetUniformLocationARB(program, "projection_matrix");
 	glUniformMatrix4fv( viewMatrix, 1, GL_FALSE, viewMatrixf);
 
-	drawCube();
+	//drawCube();
+	drawFile();
     glFlush(); // force output to graphics hardware
 
 	// use this call to double buffer
@@ -335,8 +376,8 @@ void keyboard( unsigned char key, int x, int y )
     switch ( key ) 
 	{
 		case 'w':
-			readVertexAndFaceFromFile(1);
-			
+			drawFile();
+			/*
 			printf("file name = %s\n", fileName[1]);
 			printf("countOfVertex = %d\n", countOfVertex);
 			printf("countOfFace = %d\n", countOfFace);
@@ -344,7 +385,7 @@ void keyboard( unsigned char key, int x, int y )
 			{	//read each vertex
 				printf("face = %d %d %d\n", face[j].vertex1, face[j].vertex2, face[j].vertex3);
 			}
-			
+			*/
 			break;
 		case 033:
 			exit( EXIT_SUCCESS );
