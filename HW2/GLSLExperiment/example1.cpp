@@ -13,9 +13,6 @@ void readVertexAndFaceFromFile(int);
 void generateGeometry( void );
 void display( void );
 void keyboard( unsigned char key, int x, int y );
-void quad( int a, int b, int c, int d );
-void colorcube(void);
-void drawCube(void);
 void drawFile();
 
 typedef Angel::vec4  color4;
@@ -31,8 +28,6 @@ typedef struct
 GLuint program;
 
 using namespace std;
-
-const int NumVertices = 10000; 
 
 static char fileName[43][20] = {
 						 "airplane.ply", 
@@ -80,40 +75,16 @@ static char fileName[43][20] = {
 						 "big_porsche.ply"
 						};
 
-// Vertices of a unit cube centered at origin, sides aligned with axes
-point4 vertices[8] = 
-{
-    point4( -0.5, -0.5,  0.5, 1.0 ),
-    point4( -0.5,  0.5,  0.5, 1.0 ),
-    point4(  0.5,  0.5,  0.5, 1.0 ),
-    point4(  0.5, -0.5,  0.5, 1.0 ),
-    point4( -0.5, -0.5, -0.5, 1.0 ),
-    point4( -0.5,  0.5, -0.5, 1.0 ),
-    point4(  0.5,  0.5, -0.5, 1.0 ),
-    point4(  0.5, -0.5, -0.5, 1.0 )
-};
-// RGBA colors
-color4 vertex_colors[8] = 
-{
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // black
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // red
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // yellow
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // green
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // blue
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // magenta
-    color4( 0.0, 0.0, 1.0, 1.0 ),  // white
-    color4( 0.0, 0.0, 1.0, 1.0 )   // cyan
-};
 
 point4 points[10000];
 
-point4 pointsBuf[50000];
-color4 colorsBuf[50000] = {color4( 0.0, 0.0, 1.0, 1.0 )};
+point4 pointsBuf[60000];
+color4 colorsBuf[60000] = {color4( 0.0, 1.0, 0.0, 1.0 )};
 color4 colors[36];
 
 face3    face[10000];
 static int countOfVertex, countOfFace; 
-float xMax, xMin, yMax, yMin, zMax, zMin;
+static float xMax, xMin, yMax, yMin, zMax, zMin;
 
 void readVertexAndFaceFromFile(int fileIndex)
 {
@@ -125,8 +96,8 @@ void readVertexAndFaceFromFile(int fileIndex)
 	float x,y,z;
 	int vertex1, vertex2, vertex3;
 
-	xMax = yMax = zMax = -10000;
-	xMin = yMin = zMin = 10000;
+	xMax = yMax = zMax = FLT_MIN ;
+	xMin = yMin = zMin = FLT_MAX;
 
 	if((inStream = fopen(fileName[fileIndex], "rt")) == NULL) // Open The File
 	{
@@ -162,7 +133,7 @@ void readVertexAndFaceFromFile(int fileIndex)
 	{	//read each vertex
 		fscanf(inStream,"%f %f %f", &x, &y, &z);
 		points[j] =  point4( x, y, z, 1.0 );
-
+		//printf("%f %f %f\n", x,y,z);
 		if(xMax < x) xMax = x;
 		if(yMax < y) yMax = y;
 		if(zMax < z) zMax = z;
@@ -183,29 +154,7 @@ void readVertexAndFaceFromFile(int fileIndex)
 	fclose(inStream);
 }
 
-// quad generates two triangles for each face and assigns colors
-//    to the vertices
-int Index = 0;
-void quad( int a, int b, int c, int d )
-{
-    colors[Index] = vertex_colors[a]; points[Index] = vertices[a]; Index++;
-    colors[Index] = vertex_colors[b]; points[Index] = vertices[b]; Index++;
-    colors[Index] = vertex_colors[c]; points[Index] = vertices[c]; Index++;
-    colors[Index] = vertex_colors[a]; points[Index] = vertices[a]; Index++;
-    colors[Index] = vertex_colors[c]; points[Index] = vertices[c]; Index++;
-    colors[Index] = vertex_colors[d]; points[Index] = vertices[d]; Index++;
-}
-
 // generate 12 triangles: 36 vertices and 36 colors
-void colorcube()
-{
-    quad( 1, 0, 3, 2 );
-    quad( 2, 3, 7, 6 );
-    quad( 3, 0, 4, 7 );
-    quad( 6, 5, 1, 2 );
-    quad( 4, 5, 6, 7 );
-    quad( 5, 4, 0, 1 );
-}
 
 void generateGeometry( void )
 {	
@@ -238,21 +187,10 @@ void generateGeometry( void )
     glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pointsBuf)) );
 
 	// sets the default color to clear screen
-    glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
+    glClearColor( 0.0, 0.0, 0.0, 1.0 ); // white background
 }
 
-void drawCube(void)
-{
-	// change to GL_FILL
-	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	// draw functions should enable then disable the features 
-	// that are specifit the themselves
-	// the depth is disabled after the draw 
-	// in case you need to draw overlays
-	glEnable( GL_DEPTH_TEST );
-    glDrawArrays( GL_TRIANGLES, 0, NumVertices );
-	glDisable( GL_DEPTH_TEST ); 
-}
+
 
 void drawFile()
 {
@@ -262,9 +200,9 @@ void drawFile()
 		pointsBuf[i] = points[face[i/3].vertex1];
 		pointsBuf[i+1] = points[face[i/3].vertex2];
 		pointsBuf[i+2] = points[face[i/3].vertex3];
-		colorsBuf[i] = color4( 0.0, 0.0, 1.0, 1.0 );
-		colorsBuf[i+1] = color4( 0.0, 0.0, 1.0, 1.0 );
-		colorsBuf[i+2] = color4( 0.0, 0.0, 1.0, 1.0 );
+		colorsBuf[i] = color4( 0.0, 1.0, 0.0, 1.0 );
+		colorsBuf[i+1] = color4( 0.0, 1.0, 0.0, 1.0 );
+		colorsBuf[i+2] = color4( 0.0, 1.0, 0.0, 1.0 );
 	}
 	//glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf), pointsBuf, GL_STATIC_DRAW );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf) + sizeof(colorsBuf), NULL, GL_STATIC_DRAW );
@@ -324,7 +262,7 @@ void display( void )
 	// WARNING1: I believe Angel::transpose(...) does not transpose a mat4, but just returns
 	// an identical matrix, can anyone verify this?
 
-	readVertexAndFaceFromFile(0);
+	readVertexAndFaceFromFile(22);
 	Angel::mat4 perspectiveMat = Angel::Perspective((GLfloat)45.0, (GLfloat)width/(GLfloat)height, (GLfloat)0.1, (GLfloat) 100.0);
 
 	float viewMatrixf[16];
@@ -341,7 +279,15 @@ void display( void )
 	
 
 	Angel::mat4 modelMat = Angel::identity();
-	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
+	/*
+	printf("xMax = %f\n", xMax);
+	printf("xMin = %f\n", xMin);
+	printf("yMax = %f\n", yMax);
+	printf("yMin = %f\n", yMin);
+	printf("zMax = %f\n", zMax);
+	printf("zMin = %f\n", zMin);
+	*/
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))*1.2) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -359,7 +305,6 @@ void display( void )
 	GLuint viewMatrix = glGetUniformLocationARB(program, "projection_matrix");
 	glUniformMatrix4fv( viewMatrix, 1, GL_FALSE, viewMatrixf);
 
-	//drawCube();
 	drawFile();
     glFlush(); // force output to graphics hardware
 
@@ -403,19 +348,13 @@ int main( int argc, char **argv )
     glutInitWindowSize( 512, 512 );
 	width = 512;
 	height = 512;
-    // If you are using freeglut, the next two lines will check if 
-    // the code is truly 3.2. Otherwise, comment them out
-    
-	// should run a test here 
-	// with different cases
-	// this is a good time to find out information about
-	// your graphics hardware before you allocate any memory
+
     glutInitContextVersion( 3, 1 );
     glutInitContextProfile( GLUT_CORE_PROFILE );
 
 	// create window
 	// opengl can be incorperated into other packages like wxwidgets, fltoolkit, etc.
-    glutCreateWindow( "Color Cube" );
+    glutCreateWindow( "Color Cube - Hao Zhou" );
 
 	// init glew
     glewInit();
