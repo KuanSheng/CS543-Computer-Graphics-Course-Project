@@ -9,6 +9,7 @@ int width = 0;
 int height = 0;
 
 // remember to prototype
+void readVertexAndFaceFromFile(int);
 void generateGeometry( void );
 void display( void );
 void keyboard( unsigned char key, int x, int y );
@@ -18,19 +19,74 @@ void drawCube(void);
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
+typedef struct 			
+{
+	int vertex1;		//X point index
+	int vertex2;		//Y point index
+	int vertex3;		//Z point index
+} face3;
 
 // handle to program
 GLuint program;
 
 using namespace std;
 
-const int NumVertices = 36; //(6 faces)(2 triangles/face)(3 vertices/triangle)
+const int NumVertices = 10000; 
 
-point4 points[NumVertices];
-color4 colors[NumVertices];
+point4 points[10000];
+color4 colors[10000];
+face3    face[10000];
+static int countOfVertex, countOfFace; 
+
+static char fileName[43][20] = {
+						 "airplane.ply", 
+						 "weathervane.ply", 
+						 "mug.ply", 
+						 "part.ply", 
+						 "pickup_big.ply", 
+						 "pump.ply", 
+						 "pump_tb.ply", 
+						 "sandal.ply", 
+						 "saratoga.ply",
+						 "scissors.ply",
+						 "shark.ply", 
+						 "steeringweel.ply", 
+						 "stratocaster.ply", 
+						 "street_lamp.ply", 
+						 "teapot.ply", 
+						 "tennis_shoe.ply", 
+						 "tommygun.ply", 
+						 "trashcan.ply", 
+						 "turbine.ply",
+						 "urn2.ply",
+						 "walkman.ply", 
+						 "chopper.ply", 
+						 "cow.ply", 
+						 "dolphins.ply", 
+						 "egret.ply", 
+						 "f16.ply", 
+						 "footbones.ply", 
+						 "fracttree.ply", 
+						 "galleon.ply",
+						 "hammerhead.ply",
+						 "helix.ply", 
+						 "hind.ply", 
+						 "kerolamp.ply", 
+						 "ketchup.ply", 
+						 "big_spider.ply", 
+						 "canstick.ply", 
+						 "ant.ply", 
+						 "apple.ply", 
+						 "balance.ply",
+						 "beethoven.ply",
+						 "big_atc.ply", 
+						 "big_dodge.ply", 
+						 "big_porsche.ply"
+						};
 
 // Vertices of a unit cube centered at origin, sides aligned with axes
-point4 vertices[8] = {
+point4 vertices[8] = 
+{
     point4( -0.5, -0.5,  0.5, 1.0 ),
     point4( -0.5,  0.5,  0.5, 1.0 ),
     point4(  0.5,  0.5,  0.5, 1.0 ),
@@ -40,8 +96,9 @@ point4 vertices[8] = {
     point4(  0.5,  0.5, -0.5, 1.0 ),
     point4(  0.5, -0.5, -0.5, 1.0 )
 };
-// RGBA olors
-color4 vertex_colors[8] = {
+// RGBA colors
+color4 vertex_colors[8] = 
+{
     color4( 0.0, 0.0, 0.0, 1.0 ),  // black
     color4( 1.0, 0.0, 0.0, 1.0 ),  // red
     color4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
@@ -51,6 +108,66 @@ color4 vertex_colors[8] = {
     color4( 1.0, 1.0, 1.0, 1.0 ),  // white
     color4( 0.0, 1.0, 1.0, 1.0 )   // cyan
 };
+
+void readVertexAndFaceFromFile(int fileIndex)
+{
+	char line[256];
+	FILE *inStream;
+	//int countOfVertex, countOfFace; 
+	int lineNum = 0;
+	char tmp1[20], tmp2[20];
+	float x,y,z;
+	int vertex1, vertex2, vertex3;
+
+	if((inStream = fopen(fileName[fileIndex], "rt")) == NULL) // Open The File
+	{
+		printf("File does not exist!");
+		exit(0);
+	}
+
+	while(!feof(inStream))
+	{
+		//Just go through file header
+		memset(line, 0, 256);
+		fscanf(inStream, "%s",line);
+		if(strcmp(line, "vertex") == 0)
+		{
+			fscanf(inStream, "%d",&countOfVertex);
+		}
+		else if(strcmp(line, "face") == 0)
+		{
+			fscanf(inStream, "%d",&countOfFace);
+		}
+		else if(strcmp(line, "end_header") == 0)
+		{
+			break;
+		}
+		else
+		{
+			continue;
+		}
+
+	}
+	
+	for(int j = 0; j < countOfVertex; j++)
+	{	//read each vertex
+		fscanf(inStream,"%f %f %f", &x, &y, &z);
+		points[j] =  point4( x, y, z, 1.0 );
+	}
+
+	for(int j = 0; j < countOfFace; j++)
+	{	//read each vertex
+		fscanf(inStream,"%d %d %d %d ", &lineNum, &vertex1, &vertex2, &vertex3);
+		//printf("%d %d %d\n", vertex1,vertex2,vertex3);
+		face[j].vertex1 =  vertex1;
+		face[j].vertex2 =  vertex2;
+		face[j].vertex3 =  vertex3;
+	}
+
+	fclose(inStream);
+}
+
+
 // quad generates two triangles for each face and assigns colors
 //    to the vertices
 int Index = 0;
@@ -77,7 +194,7 @@ void colorcube()
 
 void generateGeometry( void )
 {	
-    colorcube();
+    //colorcube();
 
     // Create a vertex array object
     GLuint vao;
@@ -88,8 +205,7 @@ void generateGeometry( void )
     GLuint buffer;
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors),
-		  NULL, GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
 
@@ -218,6 +334,18 @@ void keyboard( unsigned char key, int x, int y )
 {
     switch ( key ) 
 	{
+		case 'w':
+			readVertexAndFaceFromFile(1);
+			
+			printf("file name = %s\n", fileName[1]);
+			printf("countOfVertex = %d\n", countOfVertex);
+			printf("countOfFace = %d\n", countOfFace);
+			for(int j = 0; j < 10; j++)
+			{	//read each vertex
+				printf("face = %d %d %d\n", face[j].vertex1, face[j].vertex2, face[j].vertex3);
+			}
+			
+			break;
 		case 033:
 			exit( EXIT_SUCCESS );
 			break;
