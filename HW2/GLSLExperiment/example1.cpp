@@ -2,7 +2,12 @@
 // Generated using randomly selected vertices and bisection
 
 #include "Angel.h"
-
+#define X_LEFT  1
+#define X_RIGHT 2
+#define Y_UP    3
+#define Y_DOWN  4
+#define Z_FRONT 5
+#define Z_BACK  6
 
 //----------------------------------------------------------------------------
 int width = 512;
@@ -15,6 +20,8 @@ void display( void );
 void keyboard( unsigned char key, int x, int y );
 void drawFile();
 void displayFileInScreen( void );
+void move( void );
+void moveCtrl( void );
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -27,6 +34,7 @@ typedef struct
 
 // handle to program
 GLuint program;
+
 
 using namespace std;
 
@@ -88,7 +96,12 @@ static int countOfVertex;
 static long countOfFace; 
 static float xMax, xMin, yMax, yMin, zMax, zMin;
 static int fileIndex = 0;
-
+static float xMove = 0;
+static float yMove = 0;
+static float zMove = 0;
+static int direction = 0;
+int step = 0;
+int stopFlag = 0;
 void readVertexAndFaceFromFile(int fileIndex)
 {
 	char line[256];
@@ -203,15 +216,11 @@ void generateGeometry( void )
 	// sets the default color to clear screen
     glClearColor( 0.0, 0.0, 0.0, 1.0 ); // white background
 }
-
-
-
 void drawFile()
 {
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	for(int i = 0; i < countOfFace*3; i=i+3)
 	{
-		//printf("index = %d\n", i/3);
 		pointsBuf[i] = points[face[i/3].vertex1];
 		pointsBuf[i+1] = points[face[i/3].vertex2];
 		pointsBuf[i+2] = points[face[i/3].vertex3];
@@ -236,7 +245,7 @@ void drawFile()
 }
 void displayFileInScreen( void )
 {
-	printf("fileIndex = %d \t",fileIndex);
+	//printf("fileIndex = %d \t",fileIndex);
 	if(fileIndex < 0)
 	{
 		fileIndex = 42;
@@ -245,7 +254,7 @@ void displayFileInScreen( void )
 	{
 		fileIndex = 0;
 	}
-	printf("%d \n",fileIndex);
+	//printf("%d \n",fileIndex);
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );     // clear the window
 	readVertexAndFaceFromFile(fileIndex);
 
@@ -265,6 +274,7 @@ void displayFileInScreen( void )
 
 	Angel::mat4 modelMat = Angel::identity();
 
+	/*
 	printf("vex = %d\t face = %d\n", countOfVertex, countOfFace);
 	printf("xMax = %f\n", xMax);
 	printf("xMin = %f\n", xMin);
@@ -272,8 +282,8 @@ void displayFileInScreen( void )
 	printf("yMin = %f\n", yMin);
 	printf("zMax = %f\n", zMax);
 	printf("zMin = %f\n\n", zMin);
-	
-	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2, -(yMax+yMin)/2, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
+	*/
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2 + xMove, -(yMax+yMin)/2 + yMove, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2)) + zMove) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -388,9 +398,69 @@ void display( void )
 	drawFile();
 	// you can implement your own buffers with textures
 }
+void move( void )
+{
+	switch(direction)
+	{
+		case X_LEFT:
+			step = (xMax-xMin)/500;
+			xMove -= step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
 
+		case X_RIGHT:
+			step = (xMax-xMin)/500;
+			xMove += step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+
+		case Y_UP:
+			step = (yMax-yMin)/500;
+			yMove += step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+
+		case Y_DOWN:
+			step = (yMax-yMin)/500;
+			yMove -= step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+
+		case Z_FRONT:
+			step = (zMax-zMin)/50;
+			zMove += step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+
+		case Z_BACK:
+			step = (zMax-zMin)/50;
+			zMove -= step;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+		default:
+			break;
+	}
+}
+void moveCtrl( void )
+{
+	stopFlag = !stopFlag;
+	if(stopFlag)
+	{
+		move();
+	}
+	else
+	{
+		direction = 0;
+		displayFileInScreen();
+	}
+}
 //----------------------------------------------------------------------------
-
 // keyboard handler
 void keyboard( unsigned char key, int x, int y )
 {
@@ -406,6 +476,30 @@ void keyboard( unsigned char key, int x, int y )
 		case 'p':
 			fileIndex--;
 			displayFileInScreen();
+			break;
+		case 'x':
+			direction = X_LEFT;
+			moveCtrl();
+			break;
+		case 'X':
+			direction = X_RIGHT;
+			moveCtrl();
+			break;
+		case 'y':
+			direction = Y_UP;
+			moveCtrl();
+			break;
+		case 'Y':
+			direction = Y_DOWN;
+			moveCtrl();
+			break;
+		case 'z':
+			direction = Z_FRONT;
+			moveCtrl();
+			break;
+		case 'Z':
+			direction = Z_BACK;
+			moveCtrl();
 			break;
 		case 033:
 			exit( EXIT_SUCCESS );
@@ -439,6 +533,7 @@ int main( int argc, char **argv )
 	// assign handlers
     glutDisplayFunc( displayFileInScreen );
     glutKeyboardFunc( keyboard );
+	glutIdleFunc(move);
 	// should add menus
 	// add mouse handler
 	// add resize window functionality (should probably try to preserve aspect ratio)
