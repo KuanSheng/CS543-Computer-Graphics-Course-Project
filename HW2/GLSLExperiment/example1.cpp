@@ -344,7 +344,8 @@ void displayFileInScreen( void )
 	printf("zMax = %f\n", zMax);
 	printf("zMin = %f\n\n", zMin);
 	*/
-	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2 + xMove, -(yMax+yMin)/2 + yMove, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2)) + zMove) * Angel::RotateY(yRotate) * Angel::RotateX(0.0f);
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2 + xMove, -(yMax+yMin)/2 + yMove, - sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2)) + zMove) * Angel::RotateY(yRotate) * Angel::RotateX(0.0f);
+	//sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -552,6 +553,12 @@ void yRotationPointTrans( void )
 	{
 		pointsBuf[i].x = pointsBuf[i].x - xOffset;
 		pointsBuf[i].z = pointsBuf[i].z - zOffset;
+	}
+
+	for(int i = 0; i < countOfFace*2; i++)
+	{
+		normalVecter[i].x = normalVecter[i].x - xOffset;
+		normalVecter[i].z = normalVecter[i].z - zOffset;
 	}
 }
 void variableReset( void )
