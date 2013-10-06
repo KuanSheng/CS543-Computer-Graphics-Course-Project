@@ -9,7 +9,7 @@
 #define Z_FRONT		5
 #define Z_BACK		6
 #define Y_ROTATION  11
-
+#define MESH_PULSE  21
 //----------------------------------------------------------------------------
 int width = 512;
 int height = 512;
@@ -113,6 +113,8 @@ int stopFlag = 0;
 static int isYRotation = 0;
 static float yRotate = 0.0;
 static int enableNormalVecter = 0;
+static int enableMeshPulse = 0;
+
 
 void readVertexAndFaceFromFile(int fileIndex)
 {
@@ -232,6 +234,7 @@ void drawFile()
 {
 	float x1, y1, z1, x2, y2, z2;
 	int tmp;
+	float length;
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	for(int i = 0, j = 0; i < countOfFace*3; i=i+3)
 	{
@@ -251,6 +254,10 @@ void drawFile()
 
 		//Normal Vectors of each face
 		normalOfFace[i/3] = point4((y1*z2)-(z1*y2), (z1*x2)-(x1*z2), (x1*y2)-(y1*x2), 1.0);
+		// length contrls the length of normalVecters
+		length = sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2))/20;// * sqrt(normalOfFace[i/3].x*normalOfFace[i/3].x + normalOfFace[i/3].y*normalOfFace[i/3].y + normalOfFace[i/3].z*normalOfFace[i/3].z) ;
+		normalOfFace[i/3] = point4(((y1*z2)-(z1*y2))/length, ((z1*x2)-(x1*z2))/length, ((x1*y2)-(y1*x2))/length, 1.0);
+
 		normalVecter[j] = point4(	(pointsBuf[i].x+pointsBuf[i+1].x+pointsBuf[i+2].x)/3, 
 									(pointsBuf[i].y+pointsBuf[i+1].y+pointsBuf[i+2].y)/3, 
 									(pointsBuf[i].z+pointsBuf[i+1].z+pointsBuf[i+2].z)/3, 1.0);
@@ -263,6 +270,16 @@ void drawFile()
 		normalVecterColorsBuf[j] = color4( 1.0, 1.0, 1.0, 1.0 );
 		j++;
 		
+	}
+	if(enableMeshPulse == 1)
+	{
+		for(int i = 0, j = 0; i < countOfFace*3; i++)
+		{
+			float ratio = 1;//sqrt(normalOfFace[i/3].x*normalOfFace[i/3].x + normalOfFace[i/3].y*normalOfFace[i/3].y + normalOfFace[i/3].z*normalOfFace[i/3].z);
+			pointsBuf[i].x = pointsBuf[i].x + 2*normalOfFace[i/3].x / ratio ;
+			pointsBuf[i].y = pointsBuf[i].y + 2*normalOfFace[i/3].y / ratio ;
+			pointsBuf[i].z = pointsBuf[i].z + 2*normalOfFace[i/3].z / ratio ;
+		}
 	}
 	//for 'R' event
 	if(isYRotation == 1)
@@ -461,7 +478,6 @@ void display( void )
 void move( void )
 {
 	//printf("direction = %d zMove = %f\n",direction, zMove);
-
 	switch(direction)
 	{
 		case X_LEFT:
@@ -527,6 +543,13 @@ void move( void )
 			displayFileInScreen();
 			glutPostRedisplay();
 			break;
+
+		case MESH_PULSE:
+			//enableMeshPulse = !enableMeshPulse;
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
+
 		default:
 			break;
 	}
@@ -571,6 +594,7 @@ void variableReset( void )
 	stopFlag = 0;
 	yRotate = 0.0;
 	isYRotation = 0;
+	enableNormalVecter = 0;
 }
 //----------------------------------------------------------------------------
 // keyboard handler
@@ -640,6 +664,13 @@ void keyboard( unsigned char key, int x, int y )
 			direction = Y_ROTATION;
 			moveCtrl();
 			break;
+
+		case 'B':
+			enableMeshPulse = !enableMeshPulse;
+			direction = MESH_PULSE;
+			moveCtrl();
+			break;
+
 		case 'm':
 			enableNormalVecter = !enableNormalVecter;
 			displayFileInScreen();
