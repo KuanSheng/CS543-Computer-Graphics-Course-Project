@@ -112,6 +112,8 @@ float step = 0;
 int stopFlag = 0;
 static int isYRotation = 0;
 static float yRotate = 0.0;
+static int enableNormalVecter = 0;
+
 void readVertexAndFaceFromFile(int fileIndex)
 {
 	char line[256];
@@ -276,7 +278,11 @@ void drawFile()
 	
     glDrawArrays( GL_TRIANGLES, 0, countOfFace*3 );
 	glDisable( GL_DEPTH_TEST ); 
-	drawNormalVectors( );
+	if(enableNormalVecter == 1)
+	{
+		drawNormalVectors( );
+	}
+
 	glFlush(); // force output to graphics hardware
 
 	// use this call to double buffer
@@ -626,6 +632,10 @@ void keyboard( unsigned char key, int x, int y )
 			isYRotation = 1;
 			direction = Y_ROTATION;
 			moveCtrl();
+			break;
+		case 'm':
+			enableNormalVecter = !enableNormalVecter;
+			displayFileInScreen();
 			break;
 		case 033:
 			exit( EXIT_SUCCESS );
