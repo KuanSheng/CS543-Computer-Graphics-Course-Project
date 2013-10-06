@@ -2,12 +2,13 @@
 // Generated using randomly selected vertices and bisection
 
 #include "Angel.h"
-#define X_LEFT  1
-#define X_RIGHT 2
-#define Y_UP    3
-#define Y_DOWN  4
-#define Z_FRONT 5
-#define Z_BACK  6
+#define X_LEFT		1
+#define X_RIGHT		2
+#define Y_UP		3
+#define Y_DOWN		4
+#define Z_FRONT		5
+#define Z_BACK		6
+#define Y_ROTATION  11
 
 //----------------------------------------------------------------------------
 int width = 512;
@@ -23,6 +24,7 @@ void displayFileInScreen( void );
 void move( void );
 void moveCtrl( void );
 void variableReset( void );
+void yRotationPointTrans( void );
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -41,8 +43,8 @@ using namespace std;
 
 static char fileName[43][20] = {
 						 "airplane.ply", 
-						 "weathervane.ply", 
 						 "mug.ply", 
+						 "weathervane.ply", 
 						 "part.ply", 
 						 "pickup_big.ply", 
 						 "pump.ply", 
@@ -103,6 +105,8 @@ static float zMove = 0;
 static int direction = 0;
 float step = 0;
 int stopFlag = 0;
+static int isYRotation = 0;
+static float yRotate = 0.0;
 void readVertexAndFaceFromFile(int fileIndex)
 {
 	char line[256];
@@ -229,6 +233,10 @@ void drawFile()
 		colorsBuf[i+1] = color4( 0.0, 1.0, 0.0, 1.0 );
 		colorsBuf[i+2] = color4( 0.0, 1.0, 0.0, 1.0 );
 	}
+	if(isYRotation == 1)
+	{
+		yRotationPointTrans();
+	}
 	//glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf), pointsBuf, GL_STATIC_DRAW );
 	glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBuf) + sizeof(colorsBuf), NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsBuf), pointsBuf );
@@ -284,7 +292,7 @@ void displayFileInScreen( void )
 	printf("zMax = %f\n", zMax);
 	printf("zMin = %f\n\n", zMin);
 	*/
-	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2 + xMove, -(yMax+yMin)/2 + yMove, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2)) + zMove) * Angel::RotateY(0.0f) * Angel::RotateX(0.0f);
+	modelMat = modelMat * Angel::Translate(-(xMax+xMin)/2 + xMove, -(yMax+yMin)/2 + yMove, -sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2)) + zMove) * Angel::RotateY(yRotate) * Angel::RotateX(0.0f);
 	float modelMatrixf[16];
 	modelMatrixf[0] = modelMat[0][0];modelMatrixf[4] = modelMat[0][1];
 	modelMatrixf[1] = modelMat[1][0];modelMatrixf[5] = modelMat[1][1];
@@ -304,8 +312,6 @@ void displayFileInScreen( void )
 
     drawFile();
 }
-//----------------------------------------------------------------------------
-// this is where the drawing should happen
 void display( void )
 {
 	// remember to enable depth buffering when drawing in 3d
@@ -406,7 +412,7 @@ void move( void )
 	switch(direction)
 	{
 		case X_LEFT:
-			step = (xMax-xMin)/500;
+			step = (xMax-xMin)/50;
 			xMove -= step;
 			displayFileInScreen();
 			glutPostRedisplay();
@@ -446,6 +452,28 @@ void move( void )
 			displayFileInScreen();
 			glutPostRedisplay();
 			break;
+		case Y_ROTATION:
+			if(fileIndex % 2 == 0)
+			{
+				yRotate += 5;
+			}
+			else
+			{
+				yRotate -= 5;
+			}
+			if(yRotate >= 360 || yRotate <= -360)
+			{
+				yRotate = 0;
+				fileIndex++;
+			}
+			if(fileIndex >= 43)
+			{
+				fileIndex = 0;
+				direction = 0;
+			}
+			displayFileInScreen();
+			glutPostRedisplay();
+			break;
 		default:
 			break;
 	}
@@ -463,6 +491,17 @@ void moveCtrl( void )
 		displayFileInScreen();
 	}
 }
+void yRotationPointTrans( void )
+{
+	int xOffset = (xMax+xMin)/2;
+	int zOffset = (zMax+zMin)/2;
+	xMove = (xMax+xMin)/2;
+	for(int i = 0; i < countOfFace*3; i++)
+	{
+		pointsBuf[i].x = pointsBuf[i].x - xOffset;
+		pointsBuf[i].z = pointsBuf[i].z - zOffset;
+	}
+}
 void variableReset( void )
 {
 	xMove = 0;
@@ -471,6 +510,8 @@ void variableReset( void )
 	direction = 0;
 	step = 0;
 	stopFlag = 0;
+	yRotate = 0.0;
+	isYRotation = 0;
 }
 //----------------------------------------------------------------------------
 // keyboard handler
@@ -478,42 +519,66 @@ void keyboard( unsigned char key, int x, int y )
 {
     switch ( key ) 
 	{
-		case 'w':
+		case 'W':
 			variableReset();
 			displayFileInScreen();
 			break;
-		case 'n':
+		case 'N':
 			variableReset();
 			fileIndex++;
 			displayFileInScreen();
 			break;
-		case 'p':
+		case 'P':
 			variableReset();
 			fileIndex--;
 			displayFileInScreen();
 			break;
 		case 'x':
-			direction = X_LEFT;
-			moveCtrl();
+			if(isYRotation == 0)
+			{
+				direction = X_LEFT;
+				moveCtrl();
+			}
 			break;
 		case 'X':
-			direction = X_RIGHT;
-			moveCtrl();
+			if(isYRotation == 0)
+			{
+				direction = X_RIGHT;
+				moveCtrl();
+			}
 			break;
 		case 'y':
-			direction = Y_UP;
-			moveCtrl();
+			if(isYRotation == 0)
+			{
+				direction = Y_UP;
+				moveCtrl();
+			}
 			break;
 		case 'Y':
-			direction = Y_DOWN;
-			moveCtrl();
+			if(isYRotation == 0)
+			{
+				direction = Y_DOWN;
+				moveCtrl();
+			}
 			break;
 		case 'z':
-			direction = Z_FRONT;
-			moveCtrl();
+			if(isYRotation == 0)
+			{
+				direction = Z_FRONT;
+				moveCtrl();
+			}
 			break;
 		case 'Z':
-			direction = Z_BACK;
+			if(isYRotation == 0)
+			{
+				direction = Z_BACK;
+				moveCtrl();
+			}
+			break;
+
+		case 'R':
+			isYRotation = 1;
+			direction = Y_ROTATION;
 			moveCtrl();
 			break;
 		case 033:
