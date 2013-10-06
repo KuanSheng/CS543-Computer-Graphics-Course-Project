@@ -45,8 +45,8 @@ using namespace std;
 static char fileName[43][20] = {
 						 "airplane.ply", 
 						 "mug.ply", 
-						 "weathervane.ply", 
-						 "part.ply", 
+						 "cow.ply", 
+						 "beethoven.ply",
 						 "pickup_big.ply", 
 						 "pump.ply", 
 						 "pumpa_tb.ply", 
@@ -64,8 +64,8 @@ static char fileName[43][20] = {
 						 "turbine.ply",
 						 "urn2.ply",
 						 "walkman.ply", 
+						 "part.ply",
 						 "chopper.ply", 
-						 "cow.ply", 
 						 "dolphins.ply", 
 						 "egret.ply", 
 						 "f16.ply", 
@@ -84,7 +84,7 @@ static char fileName[43][20] = {
 						 "ant.ply", 
 						 "apple.ply", 
 						 "balance.ply",
-						 "beethoven.ply",
+						 "weathervane.ply",
 						 "big_atc.ply"
 						};
 
@@ -113,8 +113,8 @@ int stopFlag = 0;
 static int isYRotation = 0;
 static float yRotate = 0.0;
 static int enableNormalVecter = 0;
-static int enableMeshPulse = 0;
-
+static int meshPulseLevel = 0;
+static int increment = 1;
 
 void readVertexAndFaceFromFile(int fileIndex)
 {
@@ -271,14 +271,14 @@ void drawFile()
 		j++;
 		
 	}
-	if(enableMeshPulse == 1)
+	if( meshPulseLevel != 0)
 	{
 		for(int i = 0, j = 0; i < countOfFace*3; i++)
 		{
-			float ratio = 1;//sqrt(normalOfFace[i/3].x*normalOfFace[i/3].x + normalOfFace[i/3].y*normalOfFace[i/3].y + normalOfFace[i/3].z*normalOfFace[i/3].z);
-			pointsBuf[i].x = pointsBuf[i].x + 2*normalOfFace[i/3].x / ratio ;
-			pointsBuf[i].y = pointsBuf[i].y + 2*normalOfFace[i/3].y / ratio ;
-			pointsBuf[i].z = pointsBuf[i].z + 2*normalOfFace[i/3].z / ratio ;
+			float ratio = sqrt(normalOfFace[i/3].x*normalOfFace[i/3].x + normalOfFace[i/3].y*normalOfFace[i/3].y + normalOfFace[i/3].z*normalOfFace[i/3].z)/sqrt(pow(xMax-xMin,2)+pow(yMax-yMin,2)+pow(zMax-zMin,2));
+			pointsBuf[i].x = pointsBuf[i].x + 0.01*meshPulseLevel*normalOfFace[i/3].x / ratio ;
+			pointsBuf[i].y = pointsBuf[i].y + 0.01*meshPulseLevel*normalOfFace[i/3].y / ratio ;
+			pointsBuf[i].z = pointsBuf[i].z + 0.01*meshPulseLevel*normalOfFace[i/3].z / ratio ;
 		}
 	}
 	//for 'R' event
@@ -545,7 +545,17 @@ void move( void )
 			break;
 
 		case MESH_PULSE:
-			//enableMeshPulse = !enableMeshPulse;
+			//meshPulseLevel = !meshPulseLevel;
+			meshPulseLevel+=increment;
+			if(meshPulseLevel > 10)
+			{
+				increment = -1;
+			}
+			else if(meshPulseLevel <= 1)
+			{
+				increment = 1;
+			}
+
 			displayFileInScreen();
 			glutPostRedisplay();
 			break;
@@ -594,7 +604,8 @@ void variableReset( void )
 	stopFlag = 0;
 	yRotate = 0.0;
 	isYRotation = 0;
-	enableNormalVecter = 0;
+	//enableNormalVecter = 0;
+	meshPulseLevel = 0;
 }
 //----------------------------------------------------------------------------
 // keyboard handler
@@ -666,7 +677,7 @@ void keyboard( unsigned char key, int x, int y )
 			break;
 
 		case 'B':
-			enableMeshPulse = !enableMeshPulse;
+			meshPulseLevel = !meshPulseLevel;
 			direction = MESH_PULSE;
 			moveCtrl();
 			break;
@@ -675,6 +686,12 @@ void keyboard( unsigned char key, int x, int y )
 			enableNormalVecter = !enableNormalVecter;
 			displayFileInScreen();
 			break;
+
+		case 'e':
+			enableNormalVecter = !enableNormalVecter;
+			displayFileInScreen();
+			break;
+
 		case 033:
 			exit( EXIT_SUCCESS );
 			break;
