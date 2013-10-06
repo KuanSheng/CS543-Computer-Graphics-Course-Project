@@ -493,8 +493,8 @@ void moveCtrl( void )
 }
 void yRotationPointTrans( void )
 {
-	int xOffset = (xMax+xMin)/2;
-	int zOffset = (zMax+zMin)/2;
+	float xOffset = (xMax+xMin)/2;
+	float zOffset = (zMax+zMin)/2;
 	xMove = (xMax+xMin)/2;
 	for(int i = 0; i < countOfFace*3; i++)
 	{
