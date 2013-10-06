@@ -25,6 +25,7 @@ void move( void );
 void moveCtrl( void );
 void variableReset( void );
 void yRotationPointTrans( void );
+void drawNormalVectors( void );
 
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
@@ -95,8 +96,12 @@ color4 colorsBuf[60000] = {color4( 0.0, 1.0, 0.0, 1.0 )};
 color4 colors[36];
 
 face3    face[20000];
+point4    normalOfFace[20000];
+point4    normalVecter[40000];
+point4 normalVecterColorsBuf[40000];
 static int countOfVertex;
 static long countOfFace; 
+
 static float xMax, xMin, yMax, yMin, zMax, zMin;
 static int fileIndex = 0;
 static float xMove = 0;
@@ -219,12 +224,14 @@ void generateGeometry( void )
     glVertexAttribPointer( vColor, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(pointsBuf)) );
 
 	// sets the default color to clear screen
-    glClearColor( 0.0, 0.0, 0.0, 1.0 ); // white background
+    glClearColor( 1.0, 1.0, 1.0, 0.0 ); // white background
 }
 void drawFile()
 {
+	float x1, y1, z1, x2, y2, z2;
+	int tmp;
 	glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	for(int i = 0; i < countOfFace*3; i=i+3)
+	for(int i = 0, j = 0; i < countOfFace*3; i=i+3)
 	{
 		pointsBuf[i] = points[face[i/3].vertex1];
 		pointsBuf[i+1] = points[face[i/3].vertex2];
@@ -232,7 +239,30 @@ void drawFile()
 		colorsBuf[i] = color4( 0.0, 1.0, 0.0, 1.0 );
 		colorsBuf[i+1] = color4( 0.0, 1.0, 0.0, 1.0 );
 		colorsBuf[i+2] = color4( 0.0, 1.0, 0.0, 1.0 );
+
+		x1 = pointsBuf[i].x - pointsBuf[i+1].x;
+		y1 = pointsBuf[i].y - pointsBuf[i+1].y;
+		z1 = pointsBuf[i].z - pointsBuf[i+1].z;
+		x2 = pointsBuf[i].x - pointsBuf[i+2].x;
+		y2 = pointsBuf[i].y - pointsBuf[i+2].y;
+		z2 = pointsBuf[i].z - pointsBuf[i+2].z;
+
+		//Normal Vectors of each face
+		normalOfFace[i/3] = point4((y1*z2)-(z1*y2), (z1*x2)-(x1*z2), (x1*y2)-(y1*x2), 1.0);
+		normalVecter[j] = point4(	(pointsBuf[i].x+pointsBuf[i+1].x+pointsBuf[i+2].x)/3, 
+									(pointsBuf[i].y+pointsBuf[i+1].y+pointsBuf[i+2].y)/3, 
+									(pointsBuf[i].z+pointsBuf[i+1].z+pointsBuf[i+2].z)/3, 1.0);
+		normalVecterColorsBuf[j] = color4( 1.0, 1.0, 1.0, 1.0 );
+		tmp = j;
+		j++;
+		normalVecter[j] = point4(	normalVecter[tmp].x+normalOfFace[i/3].x,
+									normalVecter[tmp].y+normalOfFace[i/3].y,
+									normalVecter[tmp].z+normalOfFace[i/3].z, 1.0);
+		normalVecterColorsBuf[j] = color4( 1.0, 1.0, 1.0, 1.0 );
+		j++;
+		
 	}
+	//for 'R' event
 	if(isYRotation == 1)
 	{
 		yRotationPointTrans();
@@ -246,12 +276,28 @@ void drawFile()
 	
     glDrawArrays( GL_TRIANGLES, 0, countOfFace*3 );
 	glDisable( GL_DEPTH_TEST ); 
-	
+	drawNormalVectors( );
 	glFlush(); // force output to graphics hardware
 
 	// use this call to double buffer
 	glutSwapBuffers();
+
+	
 }
+void drawNormalVectors( void )
+{
+	glBufferData( GL_ARRAY_BUFFER, sizeof(normalVecter), normalVecter, GL_STATIC_DRAW );
+
+	//glBufferData( GL_ARRAY_BUFFER, sizeof(normalVecter) + sizeof(normalVecterColorsBuf), NULL, GL_STATIC_DRAW );
+    //glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(normalVecter), normalVecter );
+    //glBufferSubData( GL_ARRAY_BUFFER, sizeof(normalVecter), sizeof(normalVecterColorsBuf), normalVecterColorsBuf );
+	glEnable( GL_DEPTH_TEST );
+	glDrawArrays( GL_LINES, 0, countOfFace*2 ); 
+	glDisable( GL_DEPTH_TEST ); 
+	//glFlush();
+	//glutSwapBuffers();
+}
+
 void displayFileInScreen( void )
 {
 	//printf("fileIndex = %d \t",fileIndex);
